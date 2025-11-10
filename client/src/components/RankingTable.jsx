@@ -29,19 +29,19 @@ function RankingTable() {
       if (error) return <p>Errore: {error}</p>;
   return (
     <div>
-        <div className='flex gap-3 [&>button]:bg-indigo-900 [&>button]:rounded-lg [&>button]:p-2 m-1 '>
+        <div className='flex gap-3 [&>button]:bg-mySecondary [&>button]:rounded-lg [&>button]:p-2 m-1 '>
             <button onClick={()=>setActiveRanking(1)}>Serie A</button>
             <button onClick={()=>setActiveRanking(2)}>Serie B</button>
             <button onClick={()=>setActiveRanking(3)}>Serie C</button>
             <button onClick={()=>setActiveRanking(4)}>Serie D</button>
            
         </div>
- <div className="overflow-x-hidden">
-  <table className="table table-auto table-zebra">
+ <div className="overflow-x-hidden rounded-lg border-mySecondary border-2">
+  <table className="table table-auto">
     <thead>
-      <tr className='text-center bg-[#161A1D]'>
+      <tr className='text-center bg-mySecondary'>
         <th>#</th>
-        <th>Player</th>
+        <th><span className='flex flex-start'>Player</span></th>
         <th>Punti</th>
         <th>G</th>
         <th className='hidden md:table-cell'>Vn</th>
@@ -60,9 +60,9 @@ function RankingTable() {
                 (p.narrowWins
                     + p.goldenGoalWins)*2
                 + p.narrowLosses, numGames: p.clearWins+ p.narrowWins + p.goldenGoalWins + p.draws + p.narrowLosses + p.losses})).sort((a,b)=> b.points - a.points).map((player, id)=>(
-        <tr key={player._id || id} className='text-center align-middle'>
+        <tr key={player._id || id} className='text-center align-middle border-2 border-mySecondary'>
             <th className='w-0.5'>
-                <span className='bg-cyan-600 rounded-sm p-1  aspect-square flex justify-center items-center w-6 h-6'>{id + 1 + '.'}</span>
+                <span className='bg-mySecondary  rounded-sm p-1  aspect-square flex justify-center items-center w-6 h-6'>{id + 1 + '.'}</span>
                 
                 </th>
             <td><span className='flex justify-start'>{player.player}</span></td>
