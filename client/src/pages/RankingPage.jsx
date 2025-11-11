@@ -1,6 +1,6 @@
 import RankingTable from "../components/RankingTable"
 
-function RankingPageB() {
+function RankingPage() {
   return (
     <div className="lg:mx-[15%] xl:mx-[25%] ">
       <RankingTable/>
@@ -8,4 +8,4 @@ function RankingPageB() {
   )
 }
 
-export default RankingPageB
+export default RankingPage

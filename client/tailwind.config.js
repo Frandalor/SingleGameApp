@@ -8,8 +8,8 @@ export default {
       colors: {
         myPrimary: '#0b090a',
         mySecondary: '#161a1d',
-        accent1: '#660708',
-        accent2: '#a4161a',
+        accent1: '#1b2e2b',
+        accent2: '#374f41',
       },
     },
   },

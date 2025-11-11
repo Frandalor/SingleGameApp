@@ -1,53 +1,21 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import RankingTable from './RankingTable';
 
-function CardClassifica({link}) {
+function CardClassifica({ title = 'Serie A', ranking, teleport }) {
   return (
-  <div className="card w-90 bg-base-200 card-xl shadow-sm">
-  <div className="card-body p-5">
-    <h2 className="card-title">Serie A</h2>
-    <div className="overflow-x-auto">
-  <table className="table table-sm">
-    {/* head */}
-    <thead>
-      <tr>
-        <th></th>
-        <th>Player</th>
-        <th>Punti</th>
-        <th>Forma</th>
-      </tr>
-    </thead>
-    <tbody>
-      {/* row 1 */}
-      <tr>
-        <th>1</th>
-        <td>Cy Ganderton</td>
-        <td>Quality Control Specialist</td>
-        <td>Blue</td>
-      </tr>
-      {/* row 2 */}
-      <tr>
-        <th>2</th>
-        <td>Hart Hagerty</td>
-        <td>Desktop Support Technician</td>
-        <td>Purple</td>
-      </tr>
-      {/* row 3 */}
-      <tr>
-        <th>3</th>
-        <td>Brice Swyre</td>
-        <td>Tax Accountant</td>
-        <td>Red</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-    <div className="justify-end card-actions">
-      <Link to={link} className="text-sm text-blue-400">Vai...</Link>
+    <div className="flex w-full flex-col rounded-xl border-2 border-mySecondary p-3">
+      <span className="p-2 text-xl font-semibold">{title}</span>
+      <RankingTable initialRanking={ranking} showButton={false} limit={3} />
+      <Link
+        onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+        to={`/classifiche?active-ranking=${ranking}`}
+        className="flex justify-end p-2"
+      >
+        <span className="py1 mt-0.5 rounded-md bg-accent2 px-2 py-1 font-medium">vai...</span>
+      </Link>
     </div>
-  </div>
-</div>
-  )
+  );
 }
 
-export default CardClassifica
+export default CardClassifica;
