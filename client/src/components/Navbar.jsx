@@ -1,18 +1,24 @@
-import { Link } from "react-router-dom";
-import {Rows4, Trophy, Newspaper} from "lucide-react"
+import { Link } from 'react-router-dom';
+import { Rows4, Trophy, Newspaper } from 'lucide-react';
 function Navbar() {
   return (
-    <div className="navbar bg-base-100 shadow-sm relative z-20 md:px-[10%] lg:px-[20%] mb-8">
-      <div className="flex flex-1 justify-around  [&>a]:bg-accent1 [&>a]:py-2 [&>a]:px-4 [&>a]:rounded-md font-semibold ">
-      <Link to={'classifiche'} className="hover:bg-accent2 transition duration-150 flex justify-between items-center"><span>{<Rows4 className="w-4 h-4 mr-2"/>}</span>CAMPIONATI</Link>
-      <Link className="hover:bg-accent2 transition duration-150 flex justify-between items-center"><span>{<Trophy className="w-4 h-4 mr-2"/>}</span>COPPE</Link>
-      <Link className="hover:bg-accent2 transition duration-150 flex justify-between items-center"><span>{<Newspaper className="w-4 h-4 mr-2"/>}</span>NEWS</Link>
-
+    <div className="navbar relative z-20 mb-8 bg-base-100 shadow-sm md:px-[10%] lg:px-[20%]">
+      <div className="flex flex-1 justify-around font-semibold md:justify-normal md:gap-8 [&>a]:rounded-md [&>a]:bg-accent1 [&>a]:px-4 [&>a]:py-2">
+        <Link
+          to={'classifiche'}
+          className="flex items-center justify-between transition duration-150 hover:bg-accent2"
+        >
+          <span>{<Rows4 className="mr-2 h-4 w-4" />}</span>CAMPIONATI
+        </Link>
+        <Link className="flex items-center justify-between transition duration-150 hover:bg-accent2">
+          <span>{<Trophy className="mr-2 h-4 w-4" />}</span>COPPE
+        </Link>
+        <Link className="flex items-center justify-between transition duration-150 hover:bg-accent2">
+          <span>{<Newspaper className="mr-2 h-4 w-4" />}</span>NEWS
+        </Link>
       </div>
-</div>
+    </div>
   );
 }
 
 export default Navbar;
-
-
