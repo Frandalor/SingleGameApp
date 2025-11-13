@@ -1,7 +1,16 @@
 import userSchema from '../validation/userSchema.js';
+import resetPasswordSchema from '../validation/resetPasswordSchema.js';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../lib/utils.js';
+import {
+  sendWelcomeEmail,
+  sendResetPasswordEmail,
+} from '../emails/emailHandlers.js';
+import { ENV } from '../lib/env.js';
+import crypto, { verify } from 'crypto';
+
+// -----------------------------------SIGNUP---------------------------------------------------
 
 export const signup = async (req, res) => {
   // 1. Zod Validation
@@ -35,18 +44,25 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 5. Create new User
+    // 5.verify mail token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+
+    // 6. Create new User
 
     const newUser = new User({
-      firstName,
-      lastName,
-      userName,
-      email,
+      firstName: firstName,
+      lastName: lastName,
+      userName: userName,
+      email: email,
       password: hashedPassword,
+      verificationToken,
+      verificationTokenExpires,
     });
 
     if (newUser) {
       const savedUser = await newUser.save();
+      const verifyURL = `${ENV.CLIENT_URL}/api/auth/verify-mail?token=${verificationToken}`;
 
       generateToken(newUser._id, res);
 
@@ -57,11 +73,121 @@ export const signup = async (req, res) => {
         userName: newUser.userName,
         email: newUser.email,
       });
+
+      //invio mail
+
+      try {
+        await sendWelcomeEmail(savedUser.email, savedUser.firstName, verifyURL);
+      } catch (error) {
+        console.error('failed to send welcome email', error);
+      }
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
     console.log('error in signup controller:', error);
     res.status(500).json({ message: 'internal server error' });
+  }
+};
+
+// VERIFICA MAIL
+
+export const verifyMail = async (req, res) => {
+  const { token } = req.query;
+  if (!token) {
+    return res.status(400).json({ message: 'Token mancante' });
+  }
+  try {
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpires: { $gt: Date.now() },
+    });
+    if (!user) {
+      return res.status(400).json({ message: 'Token non valido o scaduto' });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Email verificata con successo' });
+  } catch (error) {
+    console.log('errore verifica mail', error);
+    res.status(500).json({ message: 'errore nella registrazione' });
+  }
+};
+
+//  -----------------------------------PASSWORD RESET---------------------------------------------
+
+export const passwordResetRequest = async (req, res) => {
+  const { email: rawEmail } = req.body;
+  const email = rawEmail?.trim().toLowerCase();
+  if (!email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+    return res.status(400).json({ message: 'email errata' });
+  }
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'utente non trovato' });
+    }
+
+    // token for reset
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600 * 1000;
+    await user.save();
+
+    // reset link
+
+    const resetURL = `${ENV.CLIENT_URL}/api/auth/password-reset?token=${resetToken}`;
+
+    //invio mail
+
+    await sendResetPasswordEmail(user.email, user.firstName, resetURL);
+
+    res.json({ message: 'Reset mail inviata' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'internal error' });
+  }
+};
+
+export const passwordReset = async (req, res) => {
+  const filteredData = resetPasswordSchema.safeParse(req.body);
+
+  if (!filteredData.success) {
+    const errors = parsed.error.issues.map((i) => i.message);
+    return res.status(400).json({ message: errors });
+  }
+
+  const { token, newPassword } = parsed.data;
+
+  try {
+    // cerco utente tramite token non scaduto
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'token non valido o scaduto' });
+    }
+
+    // password update
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    //  invalid reset token
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: 'password aggiornata con successo' });
+  } catch (error) {
+    console.error('errore reset password', error);
+    res.status(500).json({ message: 'internal error' });
   }
 };

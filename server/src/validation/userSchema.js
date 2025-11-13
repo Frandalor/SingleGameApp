@@ -4,13 +4,19 @@ const userSchema = z.object({
   firstName: z
     .string()
     .min(1)
-    .max(20, 'il nome può contenere al massimo 20 caratteri'),
+    .max(20, 'il nome può contenere al massimo 20 caratteri')
+    .transform((val) => val.trim()),
   lastName: z
     .string()
     .min(1)
-    .max(20, 'il cognome può contenere al massimo 20 caratteri'),
-  userName: z.string().min(1).max(20, 'max 20 caratteri'),
-  email: z.email(),
+    .max(20, 'il cognome può contenere al massimo 20 caratteri')
+    .transform((val) => val.trim()),
+  userName: z
+    .string()
+    .min(1)
+    .max(20, 'max 20 caratteri')
+    .transform((val) => val.trim()),
+  email: z.email().transform((val) => val.trim().toLowerCase()),
   password: z
     .string()
     .min(8, 'Minimo 8 caratteri')

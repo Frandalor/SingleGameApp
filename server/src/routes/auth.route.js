@@ -1,15 +1,21 @@
 import express from 'express';
-import { signup } from '../controllers/auth.controller.js';
+import {
+  signup,
+  verifyMail,
+  passwordResetRequest,
+  passwordReset,
+} from '../controllers/auth.controller.js';
+
 const router = express.Router();
 
 router.post('/signup', signup);
 
-router.get('/login', (req, res) => {
-  res.send('loginend point');
-});
+router.get('/verify-mail', verifyMail);
 
-router.get('/logout', (req, res) => {
-  res.send('logout endpoint');
-});
+router.post('/password-reset-req', passwordResetRequest);
+
+router.post('/password-reset', passwordReset);
+
+router.get('/login', async (req, res) => {});
 
 export default router;

@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       minLength: 8,
     },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: String,
+    verificationTokenExpires: Date,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   { timestamps: true } // aggiunge quando é stato creato
 );

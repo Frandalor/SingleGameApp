@@ -4,6 +4,7 @@ import playerRoutes from './routes/player.route.js';
 import authRoutes from './routes/auth.route.js';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { ENV } from './lib/env.js';
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.get('/', (req, res) => {
   res.send('home');
 });
 
-app.listen(3000, () => {
+app.listen(ENV.PORT, () => {
   console.log('listen on port 3000');
   connectDB();
 });
