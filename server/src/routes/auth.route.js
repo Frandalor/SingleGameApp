@@ -1,6 +1,8 @@
 import express from 'express';
 import {
   signup,
+  login,
+  logout,
   verifyMail,
   passwordResetRequest,
   passwordReset,
@@ -8,14 +10,21 @@ import {
 
 const router = express.Router();
 
-router.post('/signup', signup);
+//Sign up
 
+router.post('/signup', signup);
 router.get('/verify-mail', verifyMail);
 
+//Login
+
+router.post('/login', login);
+
+//Logout
+
+router.post('/logout', logout);
+
+//Password Reset
 router.post('/password-reset-req', passwordResetRequest);
-
 router.post('/password-reset', passwordReset);
-
-router.get('/login', async (req, res) => {});
 
 export default router;

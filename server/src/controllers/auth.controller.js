@@ -1,5 +1,8 @@
-import userSchema from '../validation/userSchema.js';
-import resetPasswordSchema from '../validation/resetPasswordSchema.js';
+import {
+  userSchema,
+  resetPasswordSchema,
+  loginSchema,
+} from '../validation/authSchema.js';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../lib/utils.js';
@@ -118,6 +121,46 @@ export const verifyMail = async (req, res) => {
   }
 };
 
+//-----------------------------LOGIN----------------------------------------
+
+export const login = async (req, res) => {
+  const filteredData = loginSchema.safeParse(req.body);
+  if (!filteredData.success) {
+    const errors = parsed.error.issues.map((i) => i.message);
+    res.status(400).json({ message: errors });
+  }
+  const { email, password } = filteredData.data;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'invalid credentials' });
+    }
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: 'invalid credentials' });
+    }
+
+    generateToken(user._id, res);
+
+    res.status(200).json({
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      userName: user.userName,
+    });
+  } catch (error) {
+    console.error('error in login controller')
+    res.status(500).json({message:'Internal error'})
+  }
+};
+
+//--------------------------------LOGOUT-----------------------------------
+
+export const logout = async (_, res) => {
+  res.cookies('jwt', '', {maxAge:0}) // nome scelto in generateToken in res.cookie
+  res.status(200).json({message:'logout successfully'})
+};
 //  -----------------------------------PASSWORD RESET---------------------------------------------
 
 export const passwordResetRequest = async (req, res) => {
@@ -161,8 +204,7 @@ export const passwordReset = async (req, res) => {
     return res.status(400).json({ message: errors });
   }
 
-  const { token, newPassword } = parsed.data;
-
+  const { token, newPassword } = filteredData.data;
   try {
     // cerco utente tramite token non scaduto
     const user = await User.findOne({
