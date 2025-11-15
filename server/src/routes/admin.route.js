@@ -5,7 +5,9 @@ import {
   addPlayer,
   modifyPlayer,
   setPlayerState,
-  getPlayers
+  getPlayers,
+  newMatchDay,
+  createTeams,
 } from '../controllers/admin.controller.js';
 import { validate } from '../lib/middlewares.js';
 import {
@@ -23,9 +25,13 @@ router.patch('/new-season', closeSeason);
 
 // menage players
 
-router.get('/player', getPlayers)
+router.get('/player', getPlayers);
 router.post('/player', validate(playerSchema), addPlayer);
 router.patch('/player/:id', validate(updatePlayerSchema), modifyPlayer);
 router.patch('/player/:id/state', setPlayerState);
 
+// matchDay
+
+router.post('/match-day/new', newMatchDay);
+router.post('/match-day/:id/teams', createTeams);
 export default router;

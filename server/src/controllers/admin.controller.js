@@ -1,7 +1,11 @@
 import Season from '../models/Season.js';
 import Player from '../models/Player.js';
+import MatchDay from '../models/MatchDay.js';
+import { FORMAT_MAX_TEAMS } from '../lib/constants.js';
 
 //-----------------------------------------------SEASON---------------------------------------------------------------
+
+// --------NEW SEASON
 
 export const newSeason = async (req, res) => {
   try {
@@ -32,6 +36,8 @@ export const newSeason = async (req, res) => {
     res.status(500).json({ message: 'internal error' });
   }
 };
+
+// ===========CLOSE SEASON
 
 export const closeSeason = async (req, res) => {
   try {
@@ -165,6 +171,107 @@ export const setPlayerState = async (req, res) => {
     res.status(200).json(updatedPlayer);
   } catch (error) {
     console.error('Errore nello stato del giocatore', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+};
+
+//-------------------------MATCH DAY--------------------------------------------------------------
+
+//------------NEW MATCH DAY
+
+export const newMatchDay = async (req, res) => {
+  try {
+    const { format } = req.body;
+    const activeSeason = await Season.findOne({ current: true });
+    if (!activeSeason) {
+      return res.status(400).json({ message: 'Nessuna stagione attiva' });
+    }
+    const lastMatchDay = await MatchDay.find({ season: activeSeason._id })
+      .sort({ dayNumber: -1 })
+      .limit(1);
+    const nextNumeberDay = lastMatchDay.length
+      ? lastMatchDay[0].dayNumber + 1
+      : 1; // [0] perche find restituisce sempre array
+    const maxTeams = FORMAT_MAX_TEAMS[format];
+    const matchDay = new MatchDay({
+      season: activeSeason._id,
+      dayNumber: nextNumeberDay,
+      format,
+      maxTeams,
+      status: 'pending',
+    });
+
+    const savedMatchDay = await matchDay.save();
+    res.status(201).json(savedMatchDay);
+  } catch (error) {
+    console.error('errore creando nuova giornata', error);
+    res.status(500).json({ message: 'internal error' });
+  }
+};
+
+//----------TEAM INSERTION
+
+export const createTeams = async (req, res) => {
+  try {
+    const matchDayId = req.params.id;
+    const { teams } = req.body;
+
+    const matchDay = await MatchDay.findById(matchDayId);
+    if (matchDay.teams.length >= matchDay.maxTeams) {
+      return res
+        .status(400)
+        .json({ message: 'Numero massimo di squadre già raggiunto' });
+    }
+    if (!matchDay)
+      return res.status(404).json({ message: 'Giornata non trovata' });
+    if (matchDay.status === 'completed')
+      return res.status(400).json({ message: 'Giornata già completa' });
+
+    if (!Array.isArray(teams) || teams.length === 0) {
+      return res
+        .status(400)
+        .json({ message: 'Devi fornire almeno una squadra' });
+    }
+
+    // Controllo duplicati interni
+    const allNewPlayers = teams.flatMap((t) => t.players);
+    const uniquePlayers = new Set(allNewPlayers);
+    if (uniquePlayers.size !== allNewPlayers.length) {
+      return res
+        .status(400)
+        .json({ message: 'Ci sono giocatori duplicati tra le squadre' });
+    }
+
+    // Controllo duplicati rispetto alle squadre esistenti
+    const existingPlayers = matchDay.teams.flatMap((t) => t.players);
+    const duplicates = allNewPlayers.filter((p) => existingPlayers.includes(p));
+    if (duplicates.length > 0) {
+      return res.status(400).json({
+        message: `I seguenti giocatori sono stati già inseriti: ${duplicates.join(
+          ', '
+        )}`,
+      });
+    }
+
+    // Controllo singole squadre
+    for (const team of teams) {
+      if (!Array.isArray(team.players) || !team.name) {
+        return res.status(400).json({ message: 'Squadra non valida' });
+      }
+    }
+
+    // Aggiungi le squadre
+    matchDay.teams.push(...teams);
+
+    // Aggiorna lo status se raggiunge maxTeams
+    if (matchDay.teams.length >= matchDay.maxTeams) {
+      matchDay.status = 'ready';
+    }
+
+    const savedMatchDay = await matchDay.save();
+    res.status(200).json(savedMatchDay);
+  } catch (error) {
+    console.error('Errore aggiungendo squadra', error);
     res.status(500).json({ message: 'Internal error' });
   }
 };

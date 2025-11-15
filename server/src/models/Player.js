@@ -10,6 +10,7 @@ const playerSchema = new mongoose.Schema({
     enum: ['active', 'inactive', 'diffidato'],
     default: 'active',
   },
+  turnOver: { type: Number, default: 0 },
   contacts: {
     email: { type: String, trim: true },
     phone: { type: String, trim: true },

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import Player from './Player';
 
 const matchDaySchema = new mongoose.Schema({
   season: {
@@ -8,23 +7,39 @@ const matchDaySchema = new mongoose.Schema({
     required: true,
   },
   dayNumber: { type: Number, required: true },
-  type: { type: String, enum: ['regular', 'custom'], default: 'regular' },
+  status: {
+    type: String,
+    enum: ['pending', 'ready', 'completed'],
+    default: 'pending',
+  },
+  format: { type: String, enum: ['regular', 'custom'], default: 'regular' },
   custom: { type: Number, max: 8, min: 2, default: null },
+  maxTeams: { type: Number },
   teams: {
     type: [
-      [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player', required: true }],
+      {
+        name: { type: String, required: true },
+        players: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Player',
+            required: true,
+          },
+        ],
+      },
     ],
     validate: {
       validator: function (value) {
+        if (!value) return true;
         if (this.format === 'regular') return value.length <= 4;
-        if (this.format === 'custom') return value.length <= this.custom;
+        if (this.format === 'custom') return value.length <= (this.custom || 8);
         return true;
       },
       message: function () {
         if (this.format === 'regular')
           return 'Le partite regular possono avere massimo 4 squadre';
         if (this.format === 'custom')
-          return `Le partite cup possono avere massimo ${this.custom} squadre`;
+          return `Le partite custom possono avere massimo ${this.custom} squadre`;
         return 'Numero di squadre non valido';
       },
     },
@@ -33,7 +48,7 @@ const matchDaySchema = new mongoose.Schema({
     type: [Number],
     validate: {
       validator: function (value) {
-        return value.length === this.teams.length;
+        return !this.teams || value.length === this.teams.length;
       },
       message:
         'Il numero dei punteggi deve corrispondere al numero delle squadre.',
