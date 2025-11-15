@@ -5,7 +5,15 @@ const playerSchema = new mongoose.Schema({
   category: { type: Number, required: true, min: 1, max: 4 },
   balance: { type: Number, default: 0 },
   jolly: { type: Number, default: 0 },
-  diffidato: { type: Boolean, default: false },
+  state: {
+    type: String,
+    enum: ['active', 'inactive', 'diffidato'],
+    default: 'active',
+  },
+  contacts: {
+    email: { type: String, trim: true },
+    phone: { type: String, trim: true },
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

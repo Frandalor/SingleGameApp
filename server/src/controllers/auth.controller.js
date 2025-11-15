@@ -1,8 +1,3 @@
-import {
-  userSchema,
-  resetPasswordSchema,
-  loginSchema,
-} from '../validation/authSchema.js';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../lib/utils.js';
@@ -16,17 +11,9 @@ import crypto, { verify } from 'crypto';
 // -----------------------------------SIGNUP---------------------------------------------------
 
 export const signup = async (req, res) => {
-  // 1. Zod Validation
   try {
-    const filteredData = userSchema.safeParse(req.body);
-    if (!filteredData.success) {
-      const errorList = filteredData.error.issues.map((i) => i.message);
-      console.log(errorList);
-      return res.status(400).json({ message: errorList });
-    }
-
     const { firstName, lastName, userName, email, password } =
-      filteredData.data;
+      req.validatedData;
     // 2. Unique mail check
 
     const mailCheck = await User.findOne({ email });
@@ -124,12 +111,7 @@ export const verifyMail = async (req, res) => {
 //-----------------------------LOGIN----------------------------------------
 
 export const login = async (req, res) => {
-  const filteredData = loginSchema.safeParse(req.body);
-  if (!filteredData.success) {
-    const errors = parsed.error.issues.map((i) => i.message);
-    res.status(400).json({ message: errors });
-  }
-  const { email, password } = filteredData.data;
+  const { email, password } = req.validatedData;
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -150,16 +132,16 @@ export const login = async (req, res) => {
       userName: user.userName,
     });
   } catch (error) {
-    console.error('error in login controller')
-    res.status(500).json({message:'Internal error'})
+    console.error('error in login controller');
+    res.status(500).json({ message: 'Internal error' });
   }
 };
 
 //--------------------------------LOGOUT-----------------------------------
 
 export const logout = async (_, res) => {
-  res.cookies('jwt', '', {maxAge:0}) // nome scelto in generateToken in res.cookie
-  res.status(200).json({message:'logout successfully'})
+  res.cookies('jwt', '', { maxAge: 0 }); // nome scelto in generateToken in res.cookie
+  res.status(200).json({ message: 'logout successfully' });
 };
 //  -----------------------------------PASSWORD RESET---------------------------------------------
 
@@ -197,14 +179,7 @@ export const passwordResetRequest = async (req, res) => {
 };
 
 export const passwordReset = async (req, res) => {
-  const filteredData = resetPasswordSchema.safeParse(req.body);
-
-  if (!filteredData.success) {
-    const errors = parsed.error.issues.map((i) => i.message);
-    return res.status(400).json({ message: errors });
-  }
-
-  const { token, newPassword } = filteredData.data;
+  const { token, newPassword } = req.validatedData;
   try {
     // cerco utente tramite token non scaduto
     const user = await User.findOne({

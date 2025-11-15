@@ -16,3 +16,5 @@ const PlayerPointAdjustment = mongoose.model(
   'PlayerPointAdjustment',
   playerPointAdjustmentSchema
 );
+
+export default PlayerPointAdjustment;
