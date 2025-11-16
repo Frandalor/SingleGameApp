@@ -1,3 +1,5 @@
-export const FORMAT_MAX_TEAMS = {
-  regular: 4,
+export const REGULAR_FORMAT = {
+  name: 'regular',
+  maxTeams: 4,
+  maxPlayersPerTeam: 8,
 };

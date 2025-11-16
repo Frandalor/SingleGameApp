@@ -2,13 +2,22 @@ import express from 'express';
 import {
   newSeason,
   closeSeason,
+  getAllSeason,
+} from '../controllers/admin/season.controller.js';
+import {
+  newMatchDay,
+  createTeams,
+  deleteTeamfromMatchDay,
+  getAllMatchDay,
+  getMatchDay,
+  insertResults
+} from '../controllers/admin/matchDay.controller.js';
+import {
   addPlayer,
   modifyPlayer,
   setPlayerState,
   getPlayers,
-  newMatchDay,
-  createTeams,
-} from '../controllers/admin.controller.js';
+} from '../controllers/admin/players.controller.js';
 import { validate } from '../lib/middlewares.js';
 import {
   newSeasonSchema,
@@ -16,22 +25,30 @@ import {
   updatePlayerSchema,
 } from '../validation/admin.Schema.js';
 
+//-------------------------ROUTES-----------------------------------------------------------------
+
 const router = express.Router();
 
-// new season
+//-----------SEASON--------------------
+router.get('/season', getAllSeason);
+router.post('/season/new', validate(newSeasonSchema), newSeason);
+router.patch('/season/close', closeSeason);
 
-router.post('/new-season', validate(newSeasonSchema), newSeason);
-router.patch('/new-season', closeSeason);
-
-// menage players
+//----------PLAYERS-----------------------------------
 
 router.get('/player', getPlayers);
 router.post('/player', validate(playerSchema), addPlayer);
 router.patch('/player/:id', validate(updatePlayerSchema), modifyPlayer);
 router.patch('/player/:id/state', setPlayerState);
 
-// matchDay
+//-------------MATCHDAY---------------------------------------
 
+router.get('/match-day', getAllMatchDay);
 router.post('/match-day/new', newMatchDay);
-router.post('/match-day/:id/teams', createTeams);
+router.get('/match-day/:matchDayId', getMatchDay);
+router.post('/match-day/:matchDayId/teams', createTeams);
+router.post('/match-day/:matchDayId/results', insertResults);
+router.delete('/match-day/:matchDayId/teams/:teamName', deleteTeamfromMatchDay);
+
+
 export default router;

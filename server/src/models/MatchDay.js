@@ -12,7 +12,11 @@ const matchDaySchema = new mongoose.Schema({
     enum: ['pending', 'ready', 'completed'],
     default: 'pending',
   },
-  format: { type: String, enum: ['regular', 'custom'], default: 'regular' },
+  format: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Format',
+    required: true,
+  },
   custom: { type: Number, max: 8, min: 2, default: null },
   maxTeams: { type: Number },
   teams: {
@@ -26,6 +30,20 @@ const matchDaySchema = new mongoose.Schema({
             required: true,
           },
         ],
+        score: { type: Number, default: undefined },
+        goldenGoal: { type: Boolean, default: false },
+        result: {
+          type: String,
+          enum: [
+            'clearWin',
+            'narrowWin',
+            'goldenGoalWin',
+            'loss',
+            'narrowLoss',
+            'draw',
+          ],
+          default: undefined,
+        },
       },
     ],
     validate: {
@@ -44,16 +62,7 @@ const matchDaySchema = new mongoose.Schema({
       },
     },
   },
-  score: {
-    type: [Number],
-    validate: {
-      validator: function (value) {
-        return !this.teams || value.length === this.teams.length;
-      },
-      message:
-        'Il numero dei punteggi deve corrispondere al numero delle squadre.',
-    },
-  },
+
   playerResult: [
     {
       player: {
