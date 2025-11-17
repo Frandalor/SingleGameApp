@@ -1,5 +1,6 @@
 import MatchDay from '../../models/MatchDay.js';
 import Format from '../../models/Format.js';
+import Season from '../../models/Season.js';
 import { REGULAR_FORMAT } from '../../lib/constants.js';
 import { calculatePoints, calculateMatchResult } from '../../lib/utils.js';
 
@@ -51,7 +52,9 @@ export const getMatchDay = async (req, res) => {
 
 export const newMatchDay = async (req, res) => {
   try {
-    const format = await Format.findOne({ name: 'regular' });
+    const { formatId } = req.body;
+
+    const format = await Format.findById(formatId);
     const activeSeason = await Season.findOne({ current: true });
     if (!activeSeason) {
       return res.status(400).json({ message: 'Nessuna stagione attiva' });
@@ -59,6 +62,11 @@ export const newMatchDay = async (req, res) => {
     const lastMatchDay = await MatchDay.find({ season: activeSeason._id })
       .sort({ dayNumber: -1 })
       .limit(1);
+    if (lastMatchDay.status !== 'completed') {
+      return res
+        .status(400)
+        .json({ message: "L'ultima giornata non è ancora completata" });
+    }
     const nextNumeberDay = lastMatchDay.length
       ? lastMatchDay[0].dayNumber + 1
       : 1; // [0] perche find restituisce sempre array
@@ -68,7 +76,7 @@ export const newMatchDay = async (req, res) => {
     const matchDay = new MatchDay({
       season: activeSeason._id,
       dayNumber: nextNumeberDay,
-      format,
+      format: format._id,
       maxTeams,
       status: 'pending',
     });
@@ -81,151 +89,95 @@ export const newMatchDay = async (req, res) => {
   }
 };
 
-//----------TEAM INSERTION
-
-export const createTeams = async (req, res) => {
-  try {
-    const matchDayId = req.params.id;
-    const { teams } = req.body;
-
-    const matchDay = await MatchDay.findById(matchDayId);
-    if (matchDay.teams.length >= matchDay.maxTeams) {
-      return res
-        .status(400)
-        .json({ message: 'Numero massimo di squadre già raggiunto' });
-    }
-    if (!matchDay)
-      return res.status(404).json({ message: 'Giornata non trovata' });
-    if (matchDay.status === 'completed')
-      return res.status(400).json({ message: 'Giornata già completa' });
-
-    if (!Array.isArray(teams) || teams.length === 0) {
-      return res
-        .status(400)
-        .json({ message: 'Devi fornire almeno una squadra' });
-    }
-
-    // Controllo duplicati interni
-    const allNewPlayers = teams.flatMap((t) => t.players);
-    const uniquePlayers = new Set(allNewPlayers);
-    if (uniquePlayers.size !== allNewPlayers.length) {
-      return res
-        .status(400)
-        .json({ message: 'Ci sono giocatori duplicati tra le squadre' });
-    }
-
-    // Controllo duplicati rispetto alle squadre esistenti
-    const existingPlayers = matchDay.teams.flatMap((t) =>
-      t.players.map((p) => p.toString())
-    );
-    const duplicates = allNewPlayers
-      .map((p) => p.toString())
-      .filter((p) => existingPlayers.includes(p));
-    if (duplicates.length > 0) {
-      return res.status(400).json({
-        message: `I seguenti giocatori sono stati già inseriti: ${duplicates.join(
-          ', '
-        )}`,
-      });
-    }
-
-    // Controllo singole squadre
-    for (const team of teams) {
-      if (!Array.isArray(team.players) || !team.name) {
-        return res.status(400).json({ message: 'Squadra non valida' });
-      }
-    }
-
-    // Aggiungi le squadre
-    matchDay.teams.push(...teams);
-
-    // Aggiorna lo status se raggiunge maxTeams
-    if (matchDay.teams.length >= matchDay.maxTeams) {
-      matchDay.status = 'ready';
-    }
-
-    const savedMatchDay = await matchDay.save();
-    res.status(200).json(savedMatchDay);
-  } catch (error) {
-    console.error('Errore aggiungendo squadra', error);
-    res.status(500).json({ message: 'Internal error' });
-  }
-};
-
-//------DELETE TEAM FROM MATCH DAY
-
-export const deleteTeamfromMatchDay = async (req, res) => {
-  try {
-    const { name } = req.params;
-    const { matchDayId } = req.body;
-
-    //trovo giornata
-
-    const matchDay = await MatchDay.findById(matchDayId);
-    if (!matchDay) {
-      return res.status(404).json({ message: 'Giornata non trovata' });
-    }
-
-    // block if matchDay completed
-
-    if (matchDay.status === 'completed') {
-      return res.status(400).json({
-        message: 'impossibile eliminare squadre: la giornata è terminata',
-      });
-    }
-
-    const beforeTeamsLength = matchDay.teams.length;
-
-    matchDay.teams = matchDay.teams.filter(
-      (t) => t.name.toLowerCase() !== name.toLowerCase
-    );
-
-    const afterTeamsLength = matchDay.teams.length;
-
-    if (beforeTeamsLength === afterTeamsLength) {
-      return res.status(404).json({ message: 'Squadra non trovata' });
-    }
-
-    await matchDay.save();
-
-    res.json({ message: 'squadra eliminata con successo' });
-  } catch (error) {
-    console.error('errore eliminando squadra', error);
-    res.status(500).json({ message: 'internal error' });
-  }
-};
-
 //--------INSERT RESULTS
 
 export const insertResults = async (req, res) => {
   try {
-    const { matchId } = req.params;
-    //scores array di oggetti
-    const { scores } = req.body;
+    const { matchDayId } = req.params;
+    // Il frontend deve inviare: { "results": [ { "pairingId": "...", "scoreA": 5, "scoreB": 2, ... }, ... ] }
+    const { results } = req.body;
 
-    const matchDay = await MatchDay.findById(matchId);
+    if (!Array.isArray(results) || results.length === 0) {
+      return res.status(400).json({ message: 'Formato risultati non valido' });
+    }
+
+    const matchDay = await MatchDay.findById(matchDayId);
     if (!matchDay) {
-      return res.status(404).json({
-        message: 'Giornata non trovata',
+      return res.status(404).json({ message: 'Giornata non trovata' });
+    }
+
+    if (matchDay.status !== 'ready') {
+      return res.status(400).json({
+        message: 'La giornata non è pronta per i risultati (stato non "ready")',
       });
     }
-    if (matchDay.status !== 'ready') {
-      return res
-        .status(400)
-        .json({ message: 'le squadre non sono state completate' });
-    }
 
-    if (!Array.isArray(scores) || scores.length !== matchDay.teams.length) {
-      return res
-        .status(400)
-        .json({
-          message: 'Numero di punteggi non corrispondono al nuemro di squadre',
+    //-------UPDATE PAIRING RESULT
+
+    for (const result of results) {
+      const pairing = matchDay.pairings.id(result.pairingId);
+
+      if (pairing) {
+        pairing.scoreA = result.scoreA;
+        pairing.scoreB = result.scoreB;
+        pairing.goldenGoal = result.goldenGoal || false;
+      } else {
+        return res.status(404).json({
+          message: `accoppiamento con id ${result.pairingId} non trovato`,
         });
+      }
     }
 
-    matchDay.teams.forEach((team, idx) => {
-      team.score = scores[idx].score;
-      team.goldenGoal = scores[idx.goldenGoal];
+    // CALCULATE RESULTS
+    matchDay.pairings = calculateMatchResult(matchDay.pairings);
+
+    // SET MATCH DAY STATUS
+
+    matchDay.status = 'completed';
+
+    // UPDATE PLAYER RESULTS
+
+    matchDay.playerResult = [];
+  } catch (error) {
+    console.error('errore inserendo risultati', error);
+    res.status(500).json({ message: 'internal error' });
+  }
+};
+
+export const confirmPlayers = async (req, res) => {
+  try {
+    const { matchDayId } = req.params;
+    const matchDay = await MatchDay.findById(matchDayId);
+    if (!matchDay) {
+      return res.status(4404).json({ message: 'Giornata non trovata' });
+    }
+
+    if (matchDay.status !== 'ready') {
+      return res.status(400).json({
+        message: `La giornata is not ready`,
+      });
+    }
+    matchDay.playerResult = [];
+
+    // itarate on every player of every team
+    for (const team of matchDay.teams) {
+      for (const playerId of team.players) {
+        matchDay.playerResult.push({
+          player: playerId,
+          result: 'pending',
+          points: 0,
+          usedJolly: false,
+        });
+      }
+    }
+
+    const savedMatchDay = await matchDay.save();
+    res.status(201).json({
+      message: `Lista giocatori confermata. Creato/aggiornato l'elenco in 'playerResult' (${savedMatchDay.playerResult.length} giocatori).`,
+      playerResult: savedMatchDay.playerResult,
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error('Errore confermando i giocatori', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
 };

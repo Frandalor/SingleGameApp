@@ -1,29 +1,59 @@
+//----------------------------IMPORTS--------------------------------
+
+//--------------------------SEASON--------------------
+
 import express from 'express';
 import {
   newSeason,
   closeSeason,
   getAllSeason,
 } from '../controllers/admin/season.controller.js';
+
+//-------------------------NEW MATCHDAY------
+
 import {
   newMatchDay,
-  createTeams,
-  deleteTeamfromMatchDay,
   getAllMatchDay,
   getMatchDay,
-  insertResults
+  insertResults,
+  confirmPlayers
 } from '../controllers/admin/matchDay.controller.js';
+
+//--------------------TEAM OF THE MATCH DAY-----
+import {
+  getAllTeamsDayMatch,
+  deleteTeamfromMatchDay,
+  createTeams,
+} from '../controllers/admin/teamMatchDay.controller.js';
+
+//--------------------PAIRING------------
+
+import {
+  getAllPairings,
+  createPairings,
+  resetPairing,
+} from '../controllers/admin/pairing.controller.js';
+
+//----------------PLAYERS-------------------
+
 import {
   addPlayer,
   modifyPlayer,
   setPlayerState,
   getPlayers,
 } from '../controllers/admin/players.controller.js';
-import { validate } from '../lib/middlewares.js';
+
+//---------------FORMAT
+
+import { newFormat } from '../controllers/admin/format.controller.js';
+
+//-------------------------VALIDAZIONE ZOD-----------------------------------------
 import {
   newSeasonSchema,
   playerSchema,
   updatePlayerSchema,
 } from '../validation/admin.Schema.js';
+import { validate } from '../lib/middlewares.js';
 
 //-------------------------ROUTES-----------------------------------------------------------------
 
@@ -46,9 +76,22 @@ router.patch('/player/:id/state', setPlayerState);
 router.get('/match-day', getAllMatchDay);
 router.post('/match-day/new', newMatchDay);
 router.get('/match-day/:matchDayId', getMatchDay);
-router.post('/match-day/:matchDayId/teams', createTeams);
+router.post('/match-day/:matchDayId/confirm-players', confirmPlayers);
 router.post('/match-day/:matchDayId/results', insertResults);
-router.delete('/match-day/:matchDayId/teams/:teamName', deleteTeamfromMatchDay);
 
+//-----------PAIRING------------------------
 
+router.get('/match-day/:matchDayId/pairing', getAllPairings);
+router.post('/match-day/:matchDayId/pairing', createPairings);
+router.delete('/match-day/:matchDayId/pairing', resetPairing);
+
+//----------TEAM OF MATCH DAY----------------
+
+router.get('/match-day/:matchDayId/teams', getAllTeamsDayMatch);
+router.post('/match-day/:matchDayId/teams', createTeams);
+router.delete('/match-day/:matchDayId/teams/:teamId', deleteTeamfromMatchDay);
+
+//-----------FORMAT--------------------
+
+router.post('/format/new', newFormat);
 export default router;
