@@ -1,13 +1,13 @@
 //----------------------------IMPORTS--------------------------------
 
+import express from 'express';
 //--------------------------SEASON--------------------
 
-import express from 'express';
 import {
   newSeason,
   closeSeason,
   getAllSeason,
-} from '../controllers/admin/season.controller.js';
+} from '../controllers/admin/season/season.controller.js';
 
 //-------------------------NEW MATCHDAY------
 
@@ -16,15 +16,15 @@ import {
   getAllMatchDay,
   getMatchDay,
   insertResults,
-  confirmPlayers
-} from '../controllers/admin/matchDay.controller.js';
+  confirmPlayers,
+} from '../controllers/admin/season/matchDay.controller.js';
 
 //--------------------TEAM OF THE MATCH DAY-----
 import {
   getAllTeamsDayMatch,
   deleteTeamfromMatchDay,
   createTeams,
-} from '../controllers/admin/teamMatchDay.controller.js';
+} from '../controllers/admin/season/teamMatchDay.controller.js';
 
 //--------------------PAIRING------------
 
@@ -32,7 +32,7 @@ import {
   getAllPairings,
   createPairings,
   resetPairing,
-} from '../controllers/admin/pairing.controller.js';
+} from '../controllers/admin/season/pairing.controller.js';
 
 //----------------PLAYERS-------------------
 
@@ -41,11 +41,12 @@ import {
   modifyPlayer,
   setPlayerState,
   getPlayers,
+  linkPlayerToUser,
 } from '../controllers/admin/players.controller.js';
 
 //---------------FORMAT
 
-import { newFormat } from '../controllers/admin/format.controller.js';
+import { newFormat } from '../controllers/admin/season/format.controller.js';
 
 //-------------------------VALIDAZIONE ZOD-----------------------------------------
 import {
@@ -69,6 +70,7 @@ router.patch('/season/close', closeSeason);
 router.get('/player', getPlayers);
 router.post('/player', validate(playerSchema), addPlayer);
 router.patch('/player/:id', validate(updatePlayerSchema), modifyPlayer);
+router.post('/player/:id', linkPlayerToUser);
 router.patch('/player/:id/state', setPlayerState);
 
 //-------------MATCHDAY---------------------------------------

@@ -1,4 +1,4 @@
-import MatchDay from '../../models/MatchDay.js';
+import MatchDay from '../../../models/MatchDay.js';
 
 //----------TEAM INSERTION
 
@@ -134,4 +134,3 @@ export const deleteTeamfromMatchDay = async (req, res) => {
     res.status(500).json({ message: 'internal error' });
   }
 };
-

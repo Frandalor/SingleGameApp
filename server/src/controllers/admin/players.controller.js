@@ -1,4 +1,5 @@
 import Player from '../../models/Player.js';
+import User from '../../models/User.js';
 
 //------------------------------------------PLAYERS------------------------------------------------
 
@@ -112,6 +113,51 @@ export const setPlayerState = async (req, res) => {
     res.status(200).json(updatedPlayer);
   } catch (error) {
     console.error('Errore nello stato del giocatore', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+};
+
+//---------------------LINK PLAYER TO USER
+
+export const linkPlayerToUser = async (req, res) => {
+  try {
+    const { playerId } = req.params;
+    const { userId } = req.body;
+
+    // Trova il giocatore
+    const player = await Player.findById(playerId);
+    if (!player) {
+      return res.status(404).json({ message: 'Giocatore non trovato' });
+    }
+
+    // Trova l'utente
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utente non trovato' });
+    }
+    // Controlla se il giocatore è già collegato a un altro utente
+    if (player.user && player.user.toString() !== userId) {
+      console.warn(
+        `Il giocatore ${player.player} è già collegato a un altro utente.`
+      );
+    }
+    // Controlla se l'utente è già collegato a un altro giocatore
+    const otherPlayer = await Player.findOne({ user: userId });
+
+    if (otherPlayer && otherPlayer._id.toString() !== playerId) {
+      return res.status(400).json({
+        message: `Errore: L'utente ${user.email} è già collegato al giocatore ${otherPlayer.player}.`,
+      });
+    }
+    // Collega l'utente al giocatore
+    player.user = userId;
+    await player.save();
+
+    res.status(200).json({
+      message: `Giocatore ${player.player} collegato all'utente ${user.email}`,
+    });
+  } catch (error) {
+    console.error("Errore nel collegamento del giocatore all'utente", error);
     res.status(500).json({ message: 'Internal error' });
   }
 };

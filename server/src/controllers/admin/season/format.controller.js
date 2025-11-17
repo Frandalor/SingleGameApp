@@ -1,4 +1,4 @@
-import Format from '../../models/Format.js';
+import Format from '../../../models/Format.js';
 
 export const newFormat = async (req, res) => {
   try {

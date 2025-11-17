@@ -16,6 +16,12 @@ const playerSchema = new mongoose.Schema(
       email: { type: String, trim: true },
       phone: { type: String, trim: true },
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      unique: true,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );

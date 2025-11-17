@@ -20,48 +20,70 @@ export const generateToken = (userId, res) => {
   return token;
 };
 
-export const calculatePoints = (result) => {
+export const calculatePoints = (result, hasjolly) => {
+  let basePoints = 0;
+
   switch (result) {
     case 'clearWin':
-      return 3;
+      basePoints = 3;
+      break;
     case 'narrowWin':
-      return 2;
+      basePoints = 2;
+      break;
     case 'goldenGoalWin':
-      return 2;
+      basePoints = 2;
+      break;
     case 'draw':
-      return 1;
+      basePoints = 1;
+      break;
     case 'narrowLoss':
-      return 1;
+      basePoints = 1;
+      break;
     case 'loss':
-      return 0;
+      basePoints = 0;
+      break;
     default:
-      return 0;
+      basePoints = 0;
+      break;
+  }
+  if (hasjolly) {
+    return basePoints * 2;
+  } else {
+    return basePoints;
   }
 };
 
-export const calculateMatchResult = (teams) => {
-  const updatedTeams = [...teams];
-  for (let i = 0; i < updatedTeams.length; i += 2) {
-    const teamA = updatedTeams[i];
-    const teamB = updatedTeams[i + 1];
-    if (!teamB) break;
+export const calculateMatchResult = (pairings) => {
+  for (const pairing of pairings) {
+    if (pairing.scoreA === undefined || pairing.scoreB === undefined) {
+      continue; // Salta questo pairing se mancano i punteggi
+    }
 
-    if (teamA.score === teamB.score) {
-      teamA.result = 'draw';
-      teamB.result = 'draw';
-    } else if (teamA.score > teamB.score && teamA.score - teamB.score > 1) {
-      teamA.result = 'clearWin';
-      teamB.result = 'loss';
-    } else if (teamB.score > teamA.score && teamB.score - teamA.score > 1) {
-      teamB.result = 'clearWin';
-      teamA.result = 'loss';
-    } else if (teamA.score > teamB.score) {
-      teamA.result = teamA.goldenGoal ? 'goldenGoalWin' : 'narrowWin';
-      teamB.result = teamB.goldenGoal ? 'loss' : 'narrowLoss';
-    } else if (teamB.score > teamA.score) {
-      teamB.result = teamB.goldenGoal ? 'goldenGoalWin' : 'narrowWin';
-      teamA.result = teamA.goldenGoal ? 'loss' : 'narrowLoss';
+    const diff = pairing.scoreA - pairing.scoreB;
+
+    if (diff === 0) {
+      // Pareggio
+      pairing.resultA = 'draw';
+      pairing.resultB = 'draw';
+    } else if (diff > 1) {
+      // Vittoria netta Team A
+      pairing.resultA = 'clearWin';
+      pairing.resultB = 'loss';
+    } else if (diff < -1) {
+      // Vittoria netta Team B
+      pairing.resultB = 'clearWin';
+      pairing.resultA = 'loss';
+    } else if (diff === 1) {
+      // Vittoria di misura Team A
+      pairing.resultA = pairing.goldenGoal ? 'goldenGoalWin' : 'narrowWin';
+      pairing.resultB = 'narrowLoss'; // B perde di misura
+    } else if (diff === -1) {
+      // Vittoria di misura Team B
+      pairing.resultB = pairing.goldenGoal ? 'goldenGoalWin' : 'narrowWin';
+      pairing.resultA = 'narrowLoss'; // A perde di misura
     }
   }
-  return updatedTeams;
+
+  // Restituisce l'array 'pairings' aggiornato
+  return pairings;
 };

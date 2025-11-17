@@ -1,4 +1,4 @@
-import MatchDay from '../../models/MatchDay.js';
+import MatchDay from '../../../models/MatchDay.js';
 
 //-----------------CREATE PAIRINGS
 
@@ -96,6 +96,8 @@ export const createPairings = async (req, res) => {
   }
 };
 
+//-----------------------RESET PAIRING
+
 export const resetPairing = async (req, res) => {
   try {
     const { matchDayId } = req.params;
@@ -117,7 +119,9 @@ export const resetPairing = async (req, res) => {
     }
 
     matchDay.pairings = [];
-    matchDay.status = 'pairing-pending';
+    if (matchDay.status === 'ready' || matchDay.status === 'confirmed') {
+      matchDay.status = 'pairing-pending';
+    }
     const savedMatchDay = await matchDay.save();
     res.status(200).json(savedMatchDay);
   } catch (error) {

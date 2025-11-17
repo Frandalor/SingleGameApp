@@ -1,6 +1,6 @@
 import express from 'express';
 import { connectDB } from './lib/db.js';
-import playerRoutes from './routes/player.route.js';
+import userRoutes from './routes/user.route.js';
 import adminRoutes from './routes/admin.route.js';
 import authRoutes from './routes/auth.route.js';
 import cors from 'cors';
@@ -19,7 +19,7 @@ app.use(
 
 app.use(express.json());
 
-app.use('/api/players', playerRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 

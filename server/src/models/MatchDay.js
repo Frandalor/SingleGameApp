@@ -10,7 +10,7 @@ const matchDaySchema = new mongoose.Schema(
     dayNumber: { type: Number, required: true },
     status: {
       type: String,
-      enum: ['pending', 'pairing-pending', 'ready', 'completed'],
+      enum: ['pending', 'pairing-pending', 'ready', 'confirmed', 'completed'],
       default: 'pending',
     },
     format: {
@@ -65,6 +65,7 @@ const matchDaySchema = new mongoose.Schema(
         goldenGoal: { type: Boolean, default: false },
       },
     ],
+    jollyPlayedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
     playerResult: [
       {
         player: {

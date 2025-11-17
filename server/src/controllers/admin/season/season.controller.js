@@ -1,4 +1,4 @@
-import Season from '../../models/Season.js';
+import Season from '../../../models/Season.js';
 
 //-----------------------------------------------SEASON---------------------------------------------------------------
 

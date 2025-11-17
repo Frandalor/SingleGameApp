@@ -1,8 +1,8 @@
-import MatchDay from '../../models/MatchDay.js';
-import Format from '../../models/Format.js';
-import Season from '../../models/Season.js';
-import { REGULAR_FORMAT } from '../../lib/constants.js';
-import { calculatePoints, calculateMatchResult } from '../../lib/utils.js';
+import MatchDay from '../../../models/MatchDay.js';
+import Format from '../../../models/Format.js';
+import Season from '../../../models/Season.js';
+import { REGULAR_FORMAT } from '../../../lib/constants.js';
+import { calculatePoints, calculateMatchResult } from '../../../lib/utils.js';
 
 //-------------------------MATCH DAY--------------------------------------------------------------
 
@@ -106,9 +106,15 @@ export const insertResults = async (req, res) => {
       return res.status(404).json({ message: 'Giornata non trovata' });
     }
 
-    if (matchDay.status !== 'ready') {
+    if (matchDay.status === 'completed') {
       return res.status(400).json({
-        message: 'La giornata non è pronta per i risultati (stato non "ready")',
+        message: 'I risultati di questa giornata sono già stati inseriti',
+      });
+    }
+
+    if (matchDay.status !== 'confirmed') {
+      return res.status(400).json({
+        message: 'La giornata non è stata confermata',
       });
     }
 
@@ -137,12 +143,49 @@ export const insertResults = async (req, res) => {
 
     // UPDATE PLAYER RESULTS
 
-    matchDay.playerResult = [];
+    for (const pairing of matchDay.pairings) {
+      const teamA = matchDay.teams.id(pairing.teamA);
+      const teamB = matchDay.teams.id(pairing.teamB);
+
+      for (const playerDoc of teamA.players) {
+        //cerco giocarore in playerResults
+        const playerEntry = matchDay.playerResult.find((pr) =>
+          pr.player.equals(playerDoc)
+        );
+        if (playerEntry) {
+          const hasJolly = playerEntry.usedJolly;
+          const points = calculatePoints(pairing.resultA, hasJolly);
+          // update data
+
+          playerEntry.result = pairing.resultA;
+          playerEntry.points = points;
+        }
+      }
+      for (const playerDoc of teamB.players) {
+        //cerco giocarore in playerResults
+        const playerEntry = matchDay.playerResult.find((pr) =>
+          pr.player.equals(playerDoc._is)
+        );
+        if (playerEntry) {
+          const hasJolly = player.Entry.usedJolly;
+          const points = calculatePoints(pairing.resultB, hasJolly);
+          // update data
+
+          playerEntry.result = pairing.resultB;
+          playerEntry.points = points;
+        }
+      }
+    }
+    const savedMatchDay = await matchDay.save();
+
+    res.status(200).json(savedMatchDay);
   } catch (error) {
     console.error('errore inserendo risultati', error);
     res.status(500).json({ message: 'internal error' });
   }
 };
+
+//------------------CONFIRM PLAYERS
 
 export const confirmPlayers = async (req, res) => {
   try {
@@ -158,18 +201,22 @@ export const confirmPlayers = async (req, res) => {
       });
     }
     matchDay.playerResult = [];
-
+    //registro dei jolly
+    const jollySet = new Set(matchDay.jollyPlayedBy.map((id) => id.toString()));
     // itarate on every player of every team
     for (const team of matchDay.teams) {
       for (const playerId of team.players) {
+        const hasJolly = jollySet.has(playerId.toString());
         matchDay.playerResult.push({
           player: playerId,
           result: 'pending',
           points: 0,
-          usedJolly: false,
+          usedJolly: hasJolly,
         });
       }
     }
+
+    matchDay.status = 'confirmed';
 
     const savedMatchDay = await matchDay.save();
     res.status(201).json({
