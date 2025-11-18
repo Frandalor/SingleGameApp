@@ -36,6 +36,37 @@ export const updatePlayerSchema = z.object({
   balance: z.number().optional(),
   jolly: z.number().optional(),
   diffidato: z.boolean().optional(),
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   phone: z.string().optional(),
+});
+// schema mongoose
+
+const objectIdSchema = z
+  .string()
+  .regex(/^[0-9a-fA-F]{24}$/, 'Formato ID non valido.');
+
+// schema per singolo aggiornamento di una quantita
+export const singleUpdateSchema = z.object({
+  playerId: objectIdSchema,
+  amount: z
+    .number()
+    .int("L'importo deve essere un numero intero.")
+    .refine((val) => val !== 0, {
+      message: 'Importo deve essere diverso da 0',
+    }),
+});
+
+export const multipleUpdateSchema = z.object({
+  updates: z
+    .array(singleUpdateSchema)
+    .min(1, 'Devi specificare almeno un ID.')
+    .max(150, 'Numero massimo di ID superato.'), // limite id selezionabili 150
+});
+
+export const PlayerIdArraySchema = z.object({
+  // Il campo 'playerIds' deve esistere nell'oggetto req.body
+  playerIds: z
+    .array(objectIdSchema) // 1. Deve essere un array di ID validi
+    .min(1, 'Devi specificare almeno un ID.') // 2. Non può essere vuoto
+    .max(150, 'Numero massimo di ID superato.'), // 3. Limite di sicurezza (150)
 });

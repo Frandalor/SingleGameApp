@@ -42,19 +42,31 @@ import {
   setPlayerState,
   getPlayers,
   linkPlayerToUser,
+  updateJollyBalance,
+  resetJollyforAll,
 } from '../controllers/admin/players.controller.js';
+
+//----------------CUSTOM FUNCTIONS----------------
+import { playJollyForPlayer } from '../controllers/admin/season/customFunctions.controller.js';
 
 //---------------FORMAT
 
 import { newFormat } from '../controllers/admin/season/format.controller.js';
 
-//-------------------------VALIDAZIONE ZOD-----------------------------------------
+//-------------------------VALIDAZIONE-----------------------------------------
 import {
   newSeasonSchema,
   playerSchema,
   updatePlayerSchema,
+  multipleUpdateSchema,
+  PlayerIdArraySchema,
 } from '../validation/admin.Schema.js';
-import { validate } from '../lib/middlewares.js';
+import {
+  validate,
+  validateObjectId,
+} from '../middleware/validation.middleware.js';
+import { loginRequired } from '../middleware/auth.middleware.js';
+import { id } from 'zod/v4/locales';
 
 //-------------------------ROUTES-----------------------------------------------------------------
 
@@ -69,29 +81,98 @@ router.patch('/season/close', closeSeason);
 
 router.get('/player', getPlayers);
 router.post('/player', validate(playerSchema), addPlayer);
-router.patch('/player/:id', validate(updatePlayerSchema), modifyPlayer);
-router.post('/player/:id', linkPlayerToUser);
-router.patch('/player/:id/state', setPlayerState);
+
+//--update jolly
+router.post(
+  '/player/update/jolly-balance',
+  validate(multipleUpdateSchema),
+  updateJollyBalance
+);
+router.post(
+  '/player/update/reset-jolly-all',
+  validate(PlayerIdArraySchema),
+  resetJollyforAll
+);
+
+router.patch(
+  '/player/:playerId',
+  validateObjectId('playerId'),
+  validate(updatePlayerSchema),
+  modifyPlayer
+);
+router.post(
+  '/player/:playerId',
+  validateObjectId('playerId'),
+  linkPlayerToUser
+);
+router.patch(
+  '/player/:playerId/state',
+  validateObjectId('playerId'),
+  setPlayerState
+);
 
 //-------------MATCHDAY---------------------------------------
 
 router.get('/match-day', getAllMatchDay);
 router.post('/match-day/new', newMatchDay);
-router.get('/match-day/:matchDayId', getMatchDay);
-router.post('/match-day/:matchDayId/confirm-players', confirmPlayers);
-router.post('/match-day/:matchDayId/results', insertResults);
+router.get(
+  '/match-day/:matchDayId',
+  validateObjectId('matchDayId'),
+  getMatchDay
+);
+router.post(
+  '/match-day/:matchDayId/confirm-players',
+  validateObjectId('matchDayId'),
+  confirmPlayers
+);
+router.post(
+  '/match-day/:matchDayId/results',
+  validateObjectId('matchDayId'),
+  insertResults
+);
+//--------------JOLLY--------------------------
+
+router.post(
+  '/match-day/:matchDayId/jolly/:playerId/play',
+  validateObjectId('matchDayId', 'playerId'),
+  playJollyForPlayer
+);
 
 //-----------PAIRING------------------------
 
-router.get('/match-day/:matchDayId/pairing', getAllPairings);
-router.post('/match-day/:matchDayId/pairing', createPairings);
-router.delete('/match-day/:matchDayId/pairing', resetPairing);
+router.get(
+  '/match-day/:matchDayId/pairing',
+  validateObjectId('matchDayId'),
+  getAllPairings
+);
+router.post(
+  '/match-day/:matchDayId/pairing',
+  validateObjectId('matchDayId'),
+  createPairings
+);
+router.delete(
+  '/match-day/:matchDayId/pairing',
+  validateObjectId('matchDayId'),
+  resetPairing
+);
 
 //----------TEAM OF MATCH DAY----------------
 
-router.get('/match-day/:matchDayId/teams', getAllTeamsDayMatch);
-router.post('/match-day/:matchDayId/teams', createTeams);
-router.delete('/match-day/:matchDayId/teams/:teamId', deleteTeamfromMatchDay);
+router.get(
+  '/match-day/:matchDayId/teams',
+  validateObjectId('matchDayId'),
+  getAllTeamsDayMatch
+);
+router.post(
+  '/match-day/:matchDayId/teams',
+  validateObjectId('matchDayId'),
+  createTeams
+);
+router.delete(
+  '/match-day/:matchDayId/teams/:teamId',
+  validateObjectId('matchDayId', 'teamId'),
+  deleteTeamfromMatchDay
+);
 
 //-----------FORMAT--------------------
 

@@ -60,7 +60,7 @@ export const addPlayer = async (req, res) => {
 export const modifyPlayer = async (req, res) => {
   try {
     // cerco id selezionato dalla query
-    const playerId = req.params.id;
+    const playerId = req.params.playerId;
     if (!playerId) {
       return res.status(400).json({ message: 'ID giocatore mancante' });
     }
@@ -93,7 +93,7 @@ export const modifyPlayer = async (req, res) => {
 
 export const setPlayerState = async (req, res) => {
   try {
-    const playerId = req.params.id;
+    const playerId = req.params.playerId;
     const { state } = req.body; // ci aspettiamo 'active' o 'deactivated'
 
     if (!['active', 'inactive', 'diffidato'].includes(state)) {
@@ -159,5 +159,114 @@ export const linkPlayerToUser = async (req, res) => {
   } catch (error) {
     console.error("Errore nel collegamento del giocatore all'utente", error);
     res.status(500).json({ message: 'Internal error' });
+  }
+};
+
+//-------------------------UPDATE JOLLY BALANCE
+
+export const updateJollyBalance = async (req, res) => {
+  const { updates } = req.body;
+  const successfulUpdates = [];
+  const failedUpdates = [];
+
+  try {
+    //mantiene in memoria le promises su cui lavorare, necess perche async
+
+    const updatePromises = updates.map(async ({ playerId, amount }) => {
+      try {
+        //provo ad aggiornare jolly per ogni giocatore
+        const updatedPlayer = await Player.findOneAndUpdate(
+          { _id: playerId },
+          { $inc: { jolly: amount } },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+        // se non trovo il giocatore
+
+        if (!updatedPlayer) {
+          throw new Error('Giocatore non trovato');
+        }
+
+        //push dei giocatori modificati con successo dentro array
+
+        successfulUpdates.push({ playerId, newJolly: updatedPlayer.jolly });
+      } catch (err) {
+        // per i player su cui e fallito
+        const reason =
+          err.name === 'ValidationError'
+            ? `Errore di validazione: ${err.message}`
+            : err.message;
+
+        // li butto dentro arrai failed
+        failedUpdates.push({ playerId, amount, reason });
+      }
+    });
+
+    await Promise.all(updatePromises); //per mandare in parallelo tutte le promises
+
+    res.status(200).json({
+      message: `${successfulUpdates.length} Jolly aggiornati con successo. ${failedUpdates.length} fallimenti.`,
+      successful: successfulUpdates,
+      failed: failedUpdates,
+    });
+  } catch (error) {
+    console.error("Errore globale durante l'aggiornamento Jolly:", error);
+    // Errore generico 500
+    res.status(500).json({
+      message: "Errore interno del server durante l'esecuzione del batch.",
+    });
+  }
+};
+
+//----------------------RESET JOLLY
+
+export const resetJollyforAll = async (req, res) => {
+  // ✅ 1. Destrutturazione: si aspetta solo 'playerIds' dal body (grazie a Zod)
+  const { playerIds } = req.body;
+
+  const successfulResets = [];
+  const failedResets = [];
+
+  try {
+    // 2. Creazione delle Promesse di Azzeramento
+    const resetPromises = playerIds.map(async (playerId) => {
+      try {
+        // Operazione atomica: usa $set per impostare il saldo a 0 in modo assoluto.
+        const updatedPlayer = await Player.findOneAndUpdate(
+          { _id: playerId },
+          { $set: { jolly: 0 } },
+          { new: true } // Restituisce il documento aggiornato
+        );
+
+        if (!updatedPlayer) {
+          throw new Error('Giocatore non trovato.');
+        }
+
+        // Traccia il successo
+        successfulResets.push({ playerId, newJolly: 0 });
+      } catch (error) {
+        // Traccia il fallimento (senza interrompere Promise.all)
+        failedResets.push({ playerId, reason: error.message });
+      }
+    });
+
+    // 3. Esecuzione Parallela e Attesa
+    await Promise.all(resetPromises);
+
+    // 4. Risposta
+    res.status(200).json({
+      message: `${successfulResets.length} Saldi Jolly azzerati con successo. ${failedResets.length} fallimenti.`,
+      successful: successfulResets,
+      failed: failedResets,
+    });
+  } catch (error) {
+    console.error(
+      "Errore globale durante l'azzeramento Jolly in batch:",
+      error
+    );
+    res.status(500).json({ message: 'Errore interno del server.' });
   }
 };

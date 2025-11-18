@@ -7,6 +7,7 @@ import {
 } from '../emails/emailHandlers.js';
 import { ENV } from '../lib/env.js';
 import crypto, { verify } from 'crypto';
+import cloudinary from '../lib/cloudinary.js';
 
 // -----------------------------------SIGNUP---------------------------------------------------
 
@@ -80,7 +81,7 @@ export const signup = async (req, res) => {
   }
 };
 
-// VERIFICA MAIL
+//---------------------------- VERIFICA MAIL-----------------------------
 
 export const verifyMail = async (req, res) => {
   const { token } = req.query;
@@ -205,6 +206,29 @@ export const passwordReset = async (req, res) => {
     res.json({ message: 'password aggiornata con successo' });
   } catch (error) {
     console.error('errore reset password', error);
+    res.status(500).json({ message: 'internal error' });
+  }
+};
+
+//---------------------UPDATE PROFILE-----------------------
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    if (!profilePic) {
+      return res.status(400).json({ message: 'profilePic mancante' });
+    }
+
+    const userId = req.user._id;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: uploadResponse.secure_url },
+      { new: true }
+    );
+    res.status(200).json({ updatedUser });
+  } catch (error) {
+    console.error('errore aggiornando profilo', error);
     res.status(500).json({ message: 'internal error' });
   }
 };

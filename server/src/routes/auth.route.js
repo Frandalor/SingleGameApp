@@ -6,15 +6,15 @@ import {
   verifyMail,
   passwordResetRequest,
   passwordReset,
+  updateProfile,
 } from '../controllers/auth.controller.js';
 
-import { validate } from '../lib/middlewares.js';
+import { validate } from '../middleware/validation.middleware.js';
 import {
   userSchema,
   resetPasswordSchema,
   loginSchema,
 } from '../validation/authSchema.js';
-
 const router = express.Router();
 
 //Sign up
@@ -33,5 +33,7 @@ router.post('/logout', logout);
 //Password Reset
 router.post('/password-reset-req', passwordResetRequest);
 router.post('/password-reset', validate(resetPasswordSchema), passwordReset);
+
+router.put('/update-profile', updateProfile);
 
 export default router;

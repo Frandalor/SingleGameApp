@@ -62,7 +62,7 @@ export const newMatchDay = async (req, res) => {
     const lastMatchDay = await MatchDay.find({ season: activeSeason._id })
       .sort({ dayNumber: -1 })
       .limit(1);
-    if (lastMatchDay.status !== 'completed') {
+    if (lastMatchDay.length > 0 && lastMatchDay.status !== 'completed') {
       return res
         .status(400)
         .json({ message: "L'ultima giornata non è ancora completata" });
@@ -70,9 +70,9 @@ export const newMatchDay = async (req, res) => {
     const nextNumeberDay = lastMatchDay.length
       ? lastMatchDay[0].dayNumber + 1
       : 1; // [0] perche find restituisce sempre array
-    const maxTeams = format?.maxTeams || REGULAR_FORMAT[maxTeams];
+    const maxTeams = format?.maxTeams || REGULAR_FORMAT.maxTeams;
     const maxPlayersPerTeam =
-      format?.maxPlayersPerTeam || REGULAR_FORMAT[maxPlayersPerTeam];
+      format?.maxPlayersPerTeam || REGULAR_FORMAT.maxPlayersPerTeam;
     const matchDay = new MatchDay({
       season: activeSeason._id,
       dayNumber: nextNumeberDay,
