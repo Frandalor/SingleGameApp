@@ -14,7 +14,7 @@ import cloudinary from '../lib/cloudinary.js';
 export const signup = async (req, res) => {
   try {
     const { firstName, lastName, userName, email, password } =
-      req.validatedData;
+      req.validatedData.body;
     // 2. Unique mail check
 
     const mailCheck = await User.findOne({ email });
@@ -53,7 +53,7 @@ export const signup = async (req, res) => {
 
     if (newUser) {
       const savedUser = await newUser.save();
-      const verifyURL = `${ENV.CLIENT_URL}/api/auth/verify-mail?token=${verificationToken}`;
+      const verifyURL = `${ENV.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
       generateToken(newUser._id, res);
 
@@ -84,7 +84,7 @@ export const signup = async (req, res) => {
 //---------------------------- VERIFICA MAIL-----------------------------
 
 export const verifyMail = async (req, res) => {
-  const { token } = req.query;
+  const { token } = req.body;
   if (!token) {
     return res.status(400).json({ message: 'Token mancante' });
   }
@@ -112,7 +112,7 @@ export const verifyMail = async (req, res) => {
 //-----------------------------LOGIN----------------------------------------
 
 export const login = async (req, res) => {
-  const { email, password } = req.validatedData;
+  const { email, password } = req.validatedData.body;
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -121,6 +121,9 @@ export const login = async (req, res) => {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: 'invalid credentials' });
+    }
+    if (!user.isVerified) {
+      return res.status(401).json({ message: 'email not verified' });
     }
 
     generateToken(user._id, res);
@@ -230,5 +233,17 @@ export const updateProfile = async (req, res) => {
   } catch (error) {
     console.error('errore aggiornando profilo', error);
     res.status(500).json({ message: 'internal error' });
+  }
+};
+
+//---------------------AUTH USER FOR CHECK AUTH-----------------------
+export const checkAuth = (req, res) => {
+  try {
+    // req.user esiste perché il middleware protectRoute ce l'ha messo
+    console.log('CheckAuth riuscito per:', req.user.username);
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.log('Errore nel controller checkAuth', error.message);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };

@@ -1,7 +1,13 @@
 import mongoose from 'mongoose';
 
 export const validate = (schema) => (req, res, next) => {
-  const filteredData = schema.safeParse(req.body);
+  const validationContext = {
+    body: req.body,
+    query: req.query,
+    params: req.params,
+  };
+
+  const filteredData = schema.safeParse(validationContext);
 
   if (!filteredData.success) {
     const errors = filteredData.error.issues.map((i) => i.message);

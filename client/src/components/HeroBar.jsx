@@ -14,8 +14,9 @@ function HeroBar() {
       </Link>
 
       <div className="h:18 flex min-w-[8rem] flex-col items-center justify-center gap-4 rounded-xl bg-mySecondary px-2 py-2 md:h-36 md:p-4 [&>button]:w-full [&>button]:bg-accent1">
-        <Button text={'Register'} Icon={UserPlus} />
-        <Button text={'Login'} Icon={LogIn} />
+        <Button text={'Register'} Icon={UserPlus} link={'/signup'} />
+
+        <Button text={'Login'} Icon={LogIn} link={'/login'} />
       </div>
     </div>
   );

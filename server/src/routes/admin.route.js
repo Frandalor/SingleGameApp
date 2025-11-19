@@ -49,6 +49,12 @@ import {
 //----------------CUSTOM FUNCTIONS----------------
 import { playJollyForPlayer } from '../controllers/admin/season/customFunctions.controller.js';
 
+// PLAYER POINT ADJUSTMENT
+import {
+  assignPointAdjustments,
+  getAllPointAdjustments,
+} from '../controllers/admin/playerPointAdjustment.controller.js';
+
 //---------------FORMAT
 
 import { newFormat } from '../controllers/admin/season/format.controller.js';
@@ -60,13 +66,13 @@ import {
   updatePlayerSchema,
   multipleUpdateSchema,
   PlayerIdArraySchema,
+  pointAdjustmentSchema,
 } from '../validation/admin.Schema.js';
 import {
   validate,
   validateObjectId,
 } from '../middleware/validation.middleware.js';
 import { loginRequired } from '../middleware/auth.middleware.js';
-import { id } from 'zod/v4/locales';
 
 //-------------------------ROUTES-----------------------------------------------------------------
 
@@ -94,6 +100,15 @@ router.post(
   resetJollyforAll
 );
 
+//---- penalty points
+router.get('/player/point-adjustments', getAllPointAdjustments);
+
+router.post(
+  '/player/update/point-adjustment',
+  validate(pointAdjustmentSchema),
+  assignPointAdjustments
+);
+//---------
 router.patch(
   '/player/:playerId',
   validateObjectId('playerId'),

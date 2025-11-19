@@ -70,3 +70,22 @@ export const PlayerIdArraySchema = z.object({
     .min(1, 'Devi specificare almeno un ID.') // 2. Non può essere vuoto
     .max(150, 'Numero massimo di ID superato.'), // 3. Limite di sicurezza (150)
 });
+
+export const pointAdjustmentSchema = z.object({
+  body: z.object({
+    adjustments: z
+      .array(
+        z.object({
+          playerId: objectIdSchema,
+          points: z.number({
+            required_error: 'I punti sono obbligatori',
+            invalid_type_error: 'I punti devono essere un numero',
+          }), // Accetta negativi e positivi
+          description: z
+            .string()
+            .min(3, 'La descrizione deve avere almeno 3 caratteri'),
+        })
+      )
+      .min(1, 'Devi inviare almeno un aggiornamento'),
+  }),
+});

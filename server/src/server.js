@@ -14,7 +14,8 @@ dotenv.config();
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://192.162.1.2:5173'],
+    origin: ENV.CLIENT_URL,
+    credentials: true,
   })
 );
 

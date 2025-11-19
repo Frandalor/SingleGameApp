@@ -7,9 +7,11 @@ import {
   passwordResetRequest,
   passwordReset,
   updateProfile,
+  checkAuth,
 } from '../controllers/auth.controller.js';
 
 import { validate } from '../middleware/validation.middleware.js';
+import { loginRequired } from '../middleware/auth.middleware.js';
 import {
   userSchema,
   resetPasswordSchema,
@@ -29,6 +31,9 @@ router.post('/login', validate(loginSchema), login);
 //Logout
 
 router.post('/logout', logout);
+
+// Check Auth
+router.get('/check-auth', loginRequired, checkAuth);
 
 //Password Reset
 router.post('/password-reset-req', passwordResetRequest);
