@@ -9,6 +9,7 @@ export const useAuthStore = create((set) => ({
   isLoggingIn: false,
   isResettingPassword: false,
   isResendingVerification: false,
+  isLoggingOut: false,
 
   checkAuth: async () => {
     try {
@@ -26,10 +27,11 @@ export const useAuthStore = create((set) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post('/auth/signup', data);
-      set({ authUser: res.data });
       toast.success(
         'Registrazione avvenuta con successo! Controlla la tua email per verificare il tuo account.',
+        { duration: 5000 },
       );
+      return true;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Errore durante la registrazione.');
     } finally {
@@ -44,7 +46,14 @@ export const useAuthStore = create((set) => ({
       toast.success('Bentornato!');
       return { success: true };
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Login fallito');
+      const errorMessage = error.response?.data?.message || 'Login fallito';
+      if (errorMessage === 'email not verified') {
+        toast.error(
+          'La tua email non è stata verificata. Per favore verifica la tua casella di posta.',
+          { duration: 6000 },
+        );
+        return { success: false, unverified: true, email: data.email };
+      }
     } finally {
       set({ isLoggingIn: false });
     }
@@ -95,11 +104,36 @@ export const useAuthStore = create((set) => ({
 
   //----RESEND VERIFICATION EMAIL----
   resendVerificationEmail: async (email) => {
+    set({ isResendingVerification: true });
     try {
       await axiosInstance.post('/auth/resend-verification', { email });
       toast.success('Email di verifica inviata nuovamente');
+      return true;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Errore invio email di verifica');
+      return false;
+    } finally {
+      set({ isResendingVerification: true });
+    }
+  },
+
+  //-----------LOGOUT
+  logout: async () => {
+    set({ isLoggingOut: true });
+    try {
+      await axiosInstance.post('auth/logout');
+      set({ authUser: null });
+      toast.success('Disconnessione effettuata con successo');
+
+      //lo uso come segnale per reidirizzare
+      return true;
+    } catch (error) {
+      console.error('Errore durante il logout API, forzando disconnessione locale:', error);
+      set({ authUser: null });
+      toast.error('Logout riuscito lato client, ma si è verificato un errore API.');
+      return false;
+    } finally {
+      set({ isLoggingOut: false });
     }
   },
 }));

@@ -55,8 +55,6 @@ export const signup = async (req, res) => {
       const savedUser = await newUser.save();
       const verifyURL = `${ENV.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-      generateToken(newUser._id, res);
-
       res.status(201).json({
         _id: newUser._id,
         firstName: newUser.firstName,
@@ -134,6 +132,7 @@ export const login = async (req, res) => {
       lastName: user.lastName,
       email: user.email,
       userName: user.userName,
+      role: user.role,
     });
   } catch (error) {
     console.error('error in login controller');
@@ -144,7 +143,7 @@ export const login = async (req, res) => {
 //--------------------------------LOGOUT-----------------------------------
 
 export const logout = async (_, res) => {
-  res.cookies('jwt', '', { maxAge: 0 }); // nome scelto in generateToken in res.cookie
+  res.cookie('jwt', '', { maxAge: 0 }); // nome scelto in generateToken in res.cookie
   res.status(200).json({ message: 'logout successfully' });
 };
 //  -----------------------------------PASSWORD RESET---------------------------------------------
@@ -240,7 +239,7 @@ export const updateProfile = async (req, res) => {
 export const checkAuth = (req, res) => {
   try {
     // req.user esiste perché il middleware protectRoute ce l'ha messo
-    console.log('CheckAuth riuscito per:', req.user.username);
+    console.log('CheckAuth riuscito per:', req.user.userName);
     res.status(200).json(req.user);
   } catch (error) {
     console.log('Errore nel controller checkAuth', error.message);

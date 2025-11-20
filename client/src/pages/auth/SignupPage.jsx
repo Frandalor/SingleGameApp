@@ -17,15 +17,12 @@ function SignupPage() {
     resolver: zodResolver(userFormSchema),
   });
 
-  const onSubmit = (data) => {
-    signup(data);
-  };
-
-  useEffect(() => {
-    if (authUser) {
+  const onSubmit = async (data) => {
+    const success = await signup(data);
+    if (success) {
       navigate('/');
     }
-  }, [authUser, navigate]);
+  };
 
   return (
     // SFONDO PRINCIPALE (myPrimary)
@@ -75,8 +72,7 @@ function SignupPage() {
               type="text"
               className="block w-full rounded-md border border-accent1 bg-myPrimary p-2.5 text-white outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-accent2"
               placeholder="supermario99"
-              {...register('userName',
-              )}
+              {...register('userName')}
             />
             {errors.userName && (
               <p className="mt-1 text-xs text-red-400">{errors.userName.message}</p>

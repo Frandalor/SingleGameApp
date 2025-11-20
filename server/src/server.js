@@ -7,6 +7,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { ENV } from './lib/env.js';
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
+import { logger } from './lib/logger.js';
 
 const app = express();
 
@@ -18,7 +20,7 @@ app.use(
     credentials: true,
   })
 );
-
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -31,6 +33,6 @@ app.get('/', (req, res) => {
 });
 
 app.listen(ENV.PORT, () => {
-  console.log('listen on port 3000');
+  logger.start('listen on port 3000');
   connectDB();
 });

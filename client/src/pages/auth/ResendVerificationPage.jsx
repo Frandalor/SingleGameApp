@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { emailFormSchema } from '@SingleGameApp/shared';
 import { useAuthStore } from '../../store/useAuthStore';
 import toast from 'react-hot-toast';
+import { useEffect } from 'react';
 
 function ResendVerificationPage() {
   const { resendVerificationEmail, isResendingVerification } = useAuthStore();
@@ -14,7 +15,15 @@ function ResendVerificationPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(resendVerificationSchema) });
+    setValue,
+  } = useForm({ resolver: zodResolver(emailFormSchema) });
+
+  useEffect(() => {
+    const emailFromState = location.state?.email;
+    if (emailFromState) {
+      setValue('email', emailFromState);
+    }
+  }, [location.state, setValue]);
 
   const onSubmit = async (data) => {
     const success = await resendVerificationEmail(data.email);

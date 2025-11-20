@@ -17,8 +17,16 @@ const LoginPage = () => {
     resolver: zodResolver(loginFormSchema),
   });
 
-  const onSubmit = (data) => {
-    login(data);
+  const onSubmit = async (data) => {
+    const result = await login(data);
+    if (result.unverified) {
+      navigate('/resend-verification', { state: { email: data.email } });
+      return;
+    }
+    if (result.success) {
+      navigate('/');
+      return;
+    }
   };
 
   useEffect(() => {
