@@ -37,7 +37,7 @@ export const signup = async (req, res) => {
 
     // 5.verify mail token
     const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // 6. Create new User
 
@@ -164,12 +164,12 @@ export const passwordResetRequest = async (req, res) => {
     // token for reset
     const resetToken = crypto.randomBytes(32).toString('hex');
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600 * 1000;
+    user.resetPasswordExpires = new Date(Date.now() + 3600 * 1000);
     await user.save();
 
     // reset link
 
-    const resetURL = `${ENV.CLIENT_URL}/api/auth/password-reset?token=${resetToken}`;
+    const resetURL = `${ENV.CLIENT_URL}/reset-password?token=${resetToken}`;
 
     //invio mail
 
@@ -245,5 +245,43 @@ export const checkAuth = (req, res) => {
   } catch (error) {
     console.log('Errore nel controller checkAuth', error.message);
     res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+//---------------------RESEND VERIFICATION EMAIL-----------------------
+export const resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.validatedData.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'utente non trovato' });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'Email già verificata' });
+    }
+    // Genera nuovo token di verifica
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpires = verificationTokenExpires;
+    await user.save();
+
+    const verifyURL = `${ENV.CLIENT_URL}/verify-email?token=${verificationToken}`;
+
+    // Invia l'email di verifica
+    try {
+      await sendWelcomeEmail(user.email, user.firstName, verifyURL);
+      res.json({ message: 'Email di verifica inviata nuovamente' });
+    } catch (error) {
+      console.error('failed to send verification email', error);
+      res.status(500).json({ message: 'Errore invio email di verifica' });
+    }
+
+    res.json({ message: 'Email di verifica inviata nuovamente' });
+  } catch (error) {
+    console.error('errore nel resend verification email', error);
+    res.status(500).json({ message: 'internal error' });
   }
 };

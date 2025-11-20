@@ -67,7 +67,7 @@ import {
   multipleUpdateSchema,
   PlayerIdArraySchema,
   pointAdjustmentSchema,
-} from '../validation/admin.Schema.js';
+} from '@SingleGameApp/shared';
 import {
   validate,
   validateObjectId,

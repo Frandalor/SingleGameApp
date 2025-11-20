@@ -8,6 +8,7 @@ import {
   passwordReset,
   updateProfile,
   checkAuth,
+  resendVerificationEmail,
 } from '../controllers/auth.controller.js';
 
 import { validate } from '../middleware/validation.middleware.js';
@@ -16,13 +17,19 @@ import {
   userSchema,
   resetPasswordSchema,
   loginSchema,
-} from '../validation/authSchema.js';
+  emailSchema,
+} from '@SingleGameApp/shared';
 const router = express.Router();
 
 //Sign up
 
 router.post('/signup', validate(userSchema), signup);
-router.get('/verify-mail', verifyMail);
+router.post('/verify-email', verifyMail);
+router.post(
+  '/resend-verification',
+  validate(emailSchema),
+  resendVerificationEmail
+);
 
 //Login
 
@@ -37,7 +44,11 @@ router.get('/check-auth', loginRequired, checkAuth);
 
 //Password Reset
 router.post('/password-reset-req', passwordResetRequest);
-router.post('/password-reset', validate(resetPasswordSchema), passwordReset);
+router.post(
+  '/password-reset/:token',
+  validate(resetPasswordSchema),
+  passwordReset
+);
 
 router.put('/update-profile', updateProfile);
 

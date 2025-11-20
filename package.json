@@ -1,0 +1,13 @@
+{
+  "name": "SingleGameApp",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "packages": {}
+}
