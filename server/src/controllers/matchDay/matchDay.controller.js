@@ -1,8 +1,8 @@
-import MatchDay from '../../../models/MatchDay.js';
-import Format from '../../../models/Format.js';
-import Season from '../../../models/Season.js';
-import { REGULAR_FORMAT } from '../../../lib/constants.js';
-import { calculatePoints, calculateMatchResult } from '../../../lib/utils.js';
+import MatchDay from '../../models/MatchDay.js';
+import Format from '../../models/Format.js';
+import Season from '../../models/Season.js';
+import { REGULAR_FORMAT } from '../../lib/constants.js';
+import { calculatePoints, calculateMatchResult } from '../../lib/utils.js';
 
 //-------------------------MATCH DAY--------------------------------------------------------------
 

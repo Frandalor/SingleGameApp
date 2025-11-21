@@ -1,13 +1,13 @@
-import User from '../models/User.js';
+import User from '../../models/User.js';
 import bcrypt from 'bcryptjs';
-import { generateToken } from '../lib/utils.js';
+import { generateToken } from '../../lib/utils.js';
 import {
   sendWelcomeEmail,
   sendResetPasswordEmail,
-} from '../emails/emailHandlers.js';
-import { ENV } from '../lib/env.js';
+} from '../../emails/emailHandlers.js';
+import { ENV } from '../../lib/env.js';
 import crypto, { verify } from 'crypto';
-import cloudinary from '../lib/cloudinary.js';
+import cloudinary from '../../lib/cloudinary.js';
 
 // -----------------------------------SIGNUP---------------------------------------------------
 

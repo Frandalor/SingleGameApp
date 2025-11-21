@@ -1,5 +1,6 @@
 import MatchDay from '../../models/MatchDay.js';
 import Player from '../../models/Player.js';
+import { logger } from '../../lib/logger.js';
 
 export const playJolly = async (req, res) => {
   try {
@@ -86,4 +87,10 @@ export const playJolly = async (req, res) => {
     console.error('Errore giocando il jolly', error);
     res.status(500).json({ message: 'Internal error' });
   }
+};
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    
+  } catch (error) {}
 };

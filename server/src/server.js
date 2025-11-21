@@ -1,8 +1,10 @@
 import express from 'express';
 import { connectDB } from './lib/db.js';
 import userRoutes from './routes/user.route.js';
-import adminRoutes from './routes/admin.route.js';
+import seasonRoutes from './routes/season.route.js';
 import authRoutes from './routes/auth.route.js';
+import matchDayRoutes from './routes/matchDay.route.js';
+import playerRoutes from './routes/player.route.js';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { ENV } from './lib/env.js';
@@ -26,7 +28,9 @@ app.use(cookieParser());
 
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/season', seasonRoutes);
+app.use('/api/match-day', matchDayRoutes);
+app.use('/api/player', playerRoutes);
 
 app.get('/', (req, res) => {
   res.send('home');

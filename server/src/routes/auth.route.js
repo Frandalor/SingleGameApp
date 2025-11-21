@@ -9,7 +9,7 @@ import {
   updateProfile,
   checkAuth,
   resendVerificationEmail,
-} from '../controllers/auth.controller.js';
+} from '../controllers/user/auth.controller.js';
 
 import { validate } from '../middleware/validation.middleware.js';
 import { loginRequired } from '../middleware/auth.middleware.js';

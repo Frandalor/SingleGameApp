@@ -1,5 +1,5 @@
-import MatchDay from '../../../models/MatchDay.js';
-import Player from '../../../models/Player.js';
+import MatchDay from '../../models/MatchDay.js';
+import Player from '../../models/Player.js';
 
 export const playJollyForPlayer = async (req, res) => {
   try {
