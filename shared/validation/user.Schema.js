@@ -1,19 +1,10 @@
 import { z } from 'zod';
-import { objectIdSchema } from './helper';
+import { objectIdSchema } from './helper.js';
 
 // ==========================================
 // 1. SCHEMI FRONTEND
 // ==========================================
 
-export const leaderboardFormSchema = z.object({
-  season: objectIdSchema.optional(),
-  matchDayId: z.union([objectIdSchema, z.literal('')]).optional(),
-});
-
 // ==========================================
 // 2. SCHEMI API (Wrapper - Per il Backend)
 // ==========================================
-
-export const leaderboardSchema = z.object({
-  query: leaderboardFormSchema,
-});

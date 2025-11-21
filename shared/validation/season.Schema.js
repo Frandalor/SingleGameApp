@@ -1,13 +1,14 @@
 import { z } from 'zod';
-import { objectIdSchema } from './helper';
+import { objectIdSchema } from './helper.js';
 
 // ==========================================
 // 1. SCHEMI FRONTEND
 // ==========================================
 
-export const newSeasonSchema = z
+export const newSeasonFormSchema = z
   .object({
-    name: string()
+    name: z
+      .string()
       .min(3, 'deve contenere min 3 caratteri')
       .max(24, 'può contenere max 24 caratteri')
       .trim(),
@@ -17,3 +18,7 @@ export const newSeasonSchema = z
 // ==========================================
 // 2. SCHEMI API (Wrapper - Per il Backend)
 // ==========================================
+
+export const newSeasonSchema = z.object({
+  body: newSeasonFormSchema,
+});

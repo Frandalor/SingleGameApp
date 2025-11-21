@@ -3,6 +3,8 @@ import Format from '../../models/Format.js';
 import Season from '../../models/Season.js';
 import { REGULAR_FORMAT } from '../../lib/constants.js';
 import { calculatePoints, calculateMatchResult } from '../../lib/utils.js';
+import mongoose, { Types } from 'mongoose';
+import { logger } from '../../lib/logger.js';
 
 //-------------------------MATCH DAY--------------------------------------------------------------
 
@@ -226,5 +228,124 @@ export const confirmPlayers = async (req, res) => {
   } catch (error) {
     console.error('Errore confermando i giocatori', error);
     res.status(500).json({ message: 'Internal error' });
+  }
+};
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    const { season, matchDayId } = req.validatedData.query || {};
+
+    let seasonId = season;
+
+    //se non ho nessuna season prendo quella corrente
+
+    if (!seasonId) {
+      const activeSeason = await Season.findOne({ current: true });
+      if (!activeSeason) {
+        return res
+          .status(404)
+          .json({ message: 'Nessuna stagione attiva trovata' });
+      }
+      seasonId = activeSeason._id;
+    }
+
+    //Filtro
+
+    let dayLimitFilter = {};
+    if (matchDayId) {
+      const targetMatchDay = await MatchDay.findById(matchDayId);
+      if (targetMatchDay) {
+        dayLimitFilter = { dayNumber: { $lte: targetMatchDay.dayNumber } };
+      }
+    }
+
+    const pipeline = [
+      //filtro delle giornate valide
+      {
+        $match: {
+          season: new mongoose.Types.ObjectId(seasonId),
+          status: { $in: ['completed', 'confirmed'] },
+          ...dayLimitFilter,
+        },
+      },
+      //da un documento ne creo n per ogni player result
+      { $unwind: '$playerResult' },
+      //raggruppo per giocatore
+      {
+        $group: {
+          _id: 'playerResult.player',
+          points: { $sum: '$playerResult.points' },
+
+          //conto le presenze
+          numGames: { $sum: 1 },
+
+          //con delle condizioni conto i risultati
+
+          clearWins: {
+            $sum: {
+              $cond: [{ $eq: ['$playerResult.rusult', 'clearWin'] }, 1, 0],
+            },
+          },
+          // Quante Vittorie Misura (Vm)?
+          narrowWins: {
+            $sum: {
+              $cond: [{ $eq: ['$playerResult.result', 'narrowWin'] }, 1, 0],
+            },
+          },
+
+          // Quante Golden Goal (GG)?
+          goldenGoalWins: {
+            $sum: {
+              $cond: [{ $eq: ['$playerResult.result', 'goldenGoalWin'] }, 1, 0],
+            },
+          },
+          narrowLoss: {
+            $sum: {
+              $cond: [{ $in: ['$playerResult.result', 'narrowLoss'] }, 1, 0],
+            },
+          },
+
+          allResults: { $push: '$playerResult.result' },
+        },
+      },
+      // Recupero il nome del giocatore
+      {
+        $lookup: {
+          from: 'players',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'playerInfo',
+        },
+      },
+
+      { $unwind: '$playerInfo' },
+
+      //fomatto uscita
+
+      {
+        $project: {
+          _id: 1, // 1 significa includi campo
+          name: 'playerInfo.player',
+          category: '$playerInfo.category',
+          points: 1,
+          numGames: 1,
+          clearWins: 1,
+          narrowWins: 1,
+          goldenGoalWins: 1,
+          loss: 1,
+          narrowLoss: 1,
+          form: { $slice: ['$allResults', -5] },
+        },
+      },
+
+      //ordino
+      { $sort: { points: -1 } },
+    ];
+
+    const leaderboard = await MatchDay.aggregate(pipeline);
+    res.status(200).json(leaderboard);
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({ message: 'errore classifica' });
   }
 };

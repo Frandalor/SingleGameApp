@@ -10,13 +10,13 @@ export {
   playerIdArrayFormSchema, // Usato per reset jolly
 
   // 2. Schemi API (Backend Wrappers)
-  addPlayerSchema,
+  playerSchema,
   modifyPlayerSchema,
   pointAdjustmentsSchema,
-  updateJollyBalanceSchema,
-  resetJollyforAllSchema,
+  multipleUpdateSchema,
   playerParamSchema,
   updatePlayerSchema,
+  playerIdArraySchema,
   // Schema per ID nei params (GET /:id)
 } from './validation/player.Schema.js';
 
@@ -38,25 +38,29 @@ export {
 
 //-------------------------USER-------------------------------
 
-export {
-  // frontend
-  leaderboardFormSchema,
+export {} from // frontend
 
-  //backend
-  leaderboardSchema,
-} from './validation/user.Schema.js';
+//backend
+
+'./validation/user.Schema.js';
 
 //---------------------------SEASON----------------------
 
 export {
   // Frontend
+  newSeasonFormSchema,
+  //backend
   newSeasonSchema,
 } from './validation/season.Schema.js';
 
 //---------------------MATCHID---------------
 
 export {
+  //frontend
+  leaderboardFormSchema,
+
   //backend
   matchParamSchema,
   teamIdParamSchema,
+  leaderboardSchema,
 } from './validation/matchDay.Schema.js';

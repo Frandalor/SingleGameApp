@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { objectIdSchema } from './helper';
+import { objectIdSchema } from './helper.js';
 
 const playerIdParamSchema = z.object({
   playerId: objectIdSchema,
@@ -90,7 +90,7 @@ export const playerIdArrayFormSchema = z.object({
 // ==========================================
 
 // 1. POST /api/players (Add Player)
-export const addPlayerSchema = z.object({
+export const playerSchema = z.object({
   body: playerFormSchema,
 });
 export const updatePlayerSchema = z.object({
@@ -109,7 +109,7 @@ export const pointAdjustmentsSchema = z.object({
 });
 
 // 4. POST /api/players/update/jolly-balance
-export const updateJollyBalanceSchema = z.object({
+export const multipleUpdateSchema = z.object({
   body: multipleUpdateFormSchema,
 });
 

@@ -10,6 +10,7 @@ import {
   getMatchDay,
   insertResults,
   confirmPlayers,
+  getLeaderboard,
 } from '../controllers/matchDay/matchDay.controller.js';
 
 //--------------------PAIRING------------
@@ -32,14 +33,20 @@ import { playJollyForPlayer } from '../controllers/matchDay/jolly.controller.js'
 
 //-----------------VALIDATION----------------------------
 
-import { validate } from '../middleware/validation.middleware';
+import { validate } from '../middleware/validation.middleware.js';
 
-import { matchParamSchema, teamIdParamSchema } from '@SingleGameApp/shared';
+import {
+  matchParamSchema,
+  teamIdParamSchema,
+  leaderboardSchema,
+} from '@SingleGameApp/shared';
 const router = express.Router();
 
 //-------------MATCHDAY---------------------------------------
 
 router.get('/', getAllMatchDay);
+router.get('/leaderboard', validate(leaderboardSchema), getLeaderboard);
+
 router.post('/new', newMatchDay);
 router.get('/:matchDayId', validate(matchParamSchema), getMatchDay);
 router.post(
@@ -47,35 +54,20 @@ router.post(
   validate(matchParamSchema),
   confirmPlayers
 );
-router.post(
-  '/:matchDayId/results',
-  validate(matchParamSchema),
-  insertResults
-);
+router.post('/:matchDayId/results', validate(matchParamSchema), insertResults);
 
 //-----------PAIRING------------------------
 
-router.get(
-  '/:matchDayId/pairing',
-  validate(matchParamSchema),
-  getAllPairings
-);
-router.post(
-  '/:matchDayId/pairing',
-  validate(matchParamSchema),
-  createPairings
-);
-router.delete(
-  '/:matchDayId/pairing',
-  validate(matchParamSchema),
-  resetPairing
-);
+router.get('/:matchDayId/pairing', validate(matchParamSchema), getAllPairings);
+router.post('/:matchDayId/pairing', validate(matchParamSchema), createPairings);
+router.delete('/:matchDayId/pairing', validate(matchParamSchema), resetPairing);
 
 //--------------JOLLY--------------------------
 
 router.post(
   '/:matchDayId/jolly/:playerId/play',
-  validateObjectId('matchDayId', 'playerId'),
+  validate(matchParamSchema),
+  validate(teamIdParamSchema),
   playJollyForPlayer
 );
 

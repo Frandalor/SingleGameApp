@@ -22,11 +22,11 @@ import {
 
 //-------------------------VALIDAZIONE-----------------------------------------
 
-import { validate } from '../middleware/validation.middleware';
+import { validate } from '../middleware/validation.middleware.js';
 import {
   playerSchema,
   updatePlayerSchema,
-  pointAdjustmentSchema,
+  pointAdjustmentsSchema,
   multipleUpdateSchema,
   playerIdArraySchema,
   playerParamSchema,
@@ -56,7 +56,7 @@ router.get('/point-adjustments', getAllPointAdjustments);
 
 router.post(
   '/update/point-adjustment',
-  validate(pointAdjustmentSchema),
+  validate(pointAdjustmentsSchema),
   assignPointAdjustments
 );
 //---------
@@ -66,7 +66,7 @@ router.patch(
   validate(updatePlayerSchema),
   modifyPlayer
 );
-router.post('/:playerId', validateObjectId('playerId'), linkPlayerToUser);
-router.patch('/:playerId/state', validateObjectId('playerId'), setPlayerState);
+router.post('/:playerId', validate(playerParamSchema), linkPlayerToUser);
+router.patch('/:playerId/state', validate(playerParamSchema), setPlayerState);
 
 export default router;

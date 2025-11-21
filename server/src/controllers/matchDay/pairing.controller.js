@@ -1,4 +1,4 @@
-import MatchDay from '../../../models/MatchDay.js';
+import MatchDay from '../../models/MatchDay.js';
 
 //-----------------CREATE PAIRINGS
 
