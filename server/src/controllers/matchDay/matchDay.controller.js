@@ -13,15 +13,21 @@ import { logger } from '../../lib/logger.js';
 export const getAllMatchDay = async (req, res) => {
   try {
     //filter lo prendo dalla query ?
+    const { season, light } = req.query;
     const filter = {};
-    if (req.query.season) {
-      filter.season = req.query.season;
+    if (season) {
+      filter.season = season;
     }
-    const matchDays = await MatchDay.find(filter)
-      .sort({ dayNumber: 1 })
-      .populate('season', 'name')
-      .populate('teams.players', 'player');
+    let query = MatchDay.find(filter).sort({ dayNumber: 1 });
+    if (light === 'true') {
+      query = query.select('_id dayNumber status');
+    } else {
+      query = query
+        .populate('season', 'name')
+        .populate('teams.players', 'player');
+    }
 
+    const matchDays = await query;
     res.status(200).json(matchDays);
   } catch (error) {
     console.error('errore fetching giornate', error);
@@ -194,7 +200,7 @@ export const confirmPlayers = async (req, res) => {
     const { matchDayId } = req.params;
     const matchDay = await MatchDay.findById(matchDayId);
     if (!matchDay) {
-      return res.status(4404).json({ message: 'Giornata non trovata' });
+      return res.status(404).json({ message: 'Giornata non trovata' });
     }
 
     if (matchDay.status !== 'ready') {
@@ -273,7 +279,7 @@ export const getLeaderboard = async (req, res) => {
       //raggruppo per giocatore
       {
         $group: {
-          _id: 'playerResult.player',
+          _id: '$playerResult.player',
           points: { $sum: '$playerResult.points' },
 
           //conto le presenze
@@ -299,15 +305,26 @@ export const getLeaderboard = async (req, res) => {
               $cond: [{ $eq: ['$playerResult.result', 'goldenGoalWin'] }, 1, 0],
             },
           },
-          narrowLoss: {
+          narrowLosses: {
             $sum: {
-              $cond: [{ $in: ['$playerResult.result', 'narrowLoss'] }, 1, 0],
+              $cond: [{ $eq: ['$playerResult.result', 'narrowLoss'] }, 1, 0],
+            },
+          },
+          draws: {
+            $sum: {
+              $cond: [{ $eq: ['$playerResult.result', 'draw'] }, 1, 0],
+            },
+          },
+          losses: {
+            $sum: {
+              $cond: [{ $eq: ['$playerResult.result', 'loss'] }, 1, 0],
             },
           },
 
           allResults: { $push: '$playerResult.result' },
         },
       },
+
       // Recupero il nome del giocatore
       {
         $lookup: {
@@ -325,15 +342,16 @@ export const getLeaderboard = async (req, res) => {
       {
         $project: {
           _id: 1, // 1 significa includi campo
-          name: 'playerInfo.player',
+          name: '$playerInfo.player',
           category: '$playerInfo.category',
           points: 1,
           numGames: 1,
           clearWins: 1,
           narrowWins: 1,
           goldenGoalWins: 1,
-          loss: 1,
-          narrowLoss: 1,
+          losses: 1,
+          narrowLosses: 1,
+          draws: 1,
           form: { $slice: ['$allResults', -5] },
         },
       },
