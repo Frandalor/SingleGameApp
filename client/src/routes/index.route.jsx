@@ -10,7 +10,8 @@ import VerifyEmailPage from '../pages/auth/VerifyEmailPage.jsx';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage.jsx';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.jsx';
 import ResendVerificationPage from '../pages/auth/ResendVerificationPage.jsx';
-import Test from '../components/Test.jsx';
+import AdminConsolePage from '../pages/admin/AdminConsolePage.jsx';
+import SeasonPage from '../pages/admin/SeasonPage.jsx';
 
 import AdminRoute from '../components/AdminRoute.jsx';
 
@@ -24,7 +25,10 @@ const router = createBrowserRouter([
       {
         path: 'admin',
         element: <AdminRoute />,
-        children: [{ index: true, element: <Test /> }],
+        children: [
+          { index: true, element: <AdminConsolePage /> },
+          { path: 'season', element: <SeasonPage /> },
+        ],
       },
     ],
   },

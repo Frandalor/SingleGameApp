@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Rows4, Trophy, Newspaper } from 'lucide-react';
+import { useAuthStore } from '../store/useAuthStore';
+import { UserStar } from 'lucide-react';
 function Navbar() {
+  const { authUser } = useAuthStore();
+
   return (
-    <div className="navbar relative z-20 mb-8 bg-base-100 shadow-sm md:px-[10%] lg:px-[20%]">
-      <div className="flex flex-1 justify-around font-semibold md:justify-normal md:gap-8 [&>a]:rounded-md [&>a]:bg-accent1 [&>a]:px-4 [&>a]:py-2">
+    <div className="navbar relative z-20 mb-8 bg-base-100 text-xs shadow-sm sm:text-lg md:px-[10%] lg:px-[20%]">
+      <div className="flex flex-1 flex-wrap justify-around font-semibold md:justify-normal md:gap-8 [&>a]:rounded-md [&>a]:bg-accent1 [&>a]:px-4 [&>a]:py-2">
         <Link
           to={'classifiche'}
           className="flex items-center justify-between transition duration-150 hover:bg-accent2"
@@ -16,6 +20,16 @@ function Navbar() {
         <Link className="flex items-center justify-between transition duration-150 hover:bg-accent2">
           <span>{<Newspaper className="mr-2 h-4 w-4" />}</span>NEWS
         </Link>
+        {authUser?.role === 'admin' && (
+          <Link
+            to={'admin'}
+            className="flex items-center justify-between transition duration-150 hover:bg-accent2"
+          >
+            <span>
+              <UserStar />
+            </span>
+          </Link>
+        )}
       </div>
     </div>
   );

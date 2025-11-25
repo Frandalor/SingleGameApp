@@ -18,7 +18,11 @@ function AdminRoute() {
   if (authUser.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
-  return <Outlet />;
+  return (
+    <div className="flex-1 py-6 sm:px-4 lg:px-[25%]">
+      <Outlet />
+    </div>
+  );
 }
 
 export default AdminRoute;

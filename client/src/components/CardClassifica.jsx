@@ -4,7 +4,7 @@ import RankingTable from './RankingTable';
 
 function CardClassifica({ title = 'Serie A', ranking, teleport }) {
   return (
-    <div className="flex w-full flex-col rounded-xl border-2 border-mySecondary p-3">
+    <div className="flex w-full flex-col overflow-x-hidden rounded-xl border-2 border-mySecondary p-3">
       <span className="p-2 text-xl font-semibold">{title}</span>
       <RankingTable initialRanking={ranking} showButton={false} limit={3} />
       <Link

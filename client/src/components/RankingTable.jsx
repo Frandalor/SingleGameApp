@@ -154,7 +154,7 @@ function RankingTable({ initialRanking = 1, limit, showButton = true, activeSeas
       </div>
 
       {/* TABELLA */}
-      <div id="ranking-table" className="overflow-x-auto rounded-lg border-2 border-mySecondary">
+      <div id="ranking-table" className="overflow-x-hidden rounded-lg border-2 border-mySecondary">
         <table className="table w-full table-auto border-collapse">
           <thead>
             <tr className="bg-mySecondary text-center">
@@ -174,7 +174,7 @@ function RankingTable({ initialRanking = 1, limit, showButton = true, activeSeas
             </tr>
           </thead>
 
-          <tbody className="[&>tr>td]:px-4 [&>tr>td]:py-2 [&>tr]:h-12">
+          <tbody className="[&>tr>td]:px-2 [&>tr>td]:py-2 [&>tr]:h-12">
             {displayPlayers.map((player, id) => (
               <tr
                 key={player._id || id}
