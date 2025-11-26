@@ -17,8 +17,9 @@ export const getAllSeason = async (req, res) => {
 // --------NEW SEASON
 
 export const newSeason = async (req, res) => {
+
   try {
-    const { name } = req.validatedData;
+    const { name, startDate } = req.validatedData.body;
 
     // check if there is an open season
 
@@ -31,7 +32,7 @@ export const newSeason = async (req, res) => {
 
     // create new season
 
-    const season = new Season({ name, startDate: new Date(), current: true });
+    const season = new Season({ name, startDate: startDate, current: true });
     const savedSeason = await season.save();
 
     res.status(201).json(savedSeason);

@@ -13,14 +13,16 @@ import { logger } from '../../lib/logger.js';
 export const getAllMatchDay = async (req, res) => {
   try {
     //filter lo prendo dalla query ?
-    const { season, light } = req.query;
+    const { season, fields } = req.query;
     const filter = {};
     if (season) {
       filter.season = season;
     }
     let query = MatchDay.find(filter).sort({ dayNumber: 1 });
-    if (light === 'true') {
-      query = query.select('_id dayNumber status');
+
+    if (fields) {
+      const fieldsList = fields.split(',').join(' ');
+      query = query.select(fieldsList);
     } else {
       query = query
         .populate('season', 'name')

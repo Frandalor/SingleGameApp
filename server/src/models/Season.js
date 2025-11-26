@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 const seasonSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true },
-    startDate: Date,
-    endDate: Date,
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date, default: Date.now },
     current: { type: Boolean, default: true },
   },
   { timestamps: true }

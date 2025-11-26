@@ -26,9 +26,15 @@ export const getLeaderboardService = async (seasonId, matchDayId) => {
 
 export const getMatchDayListService = async (seasonId) => {
   try {
-    const params = seasonId ? { season: seasonId } : {};
+    const params = {};
 
-    const response = await axiosInstance.get('/match-day?light=true', { params });
+    if (seasonId) {
+      params.season = seasonId;
+    }
+
+    params.fields = '_id,dayNumber,status,createdAt';
+
+    const response = await axiosInstance.get('/match-day', { params });
     return response.data;
   } catch (error) {
     console.error('errore API lista giornate', error);

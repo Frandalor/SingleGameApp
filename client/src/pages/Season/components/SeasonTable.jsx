@@ -1,4 +1,4 @@
-import { formatDate } from '../lib/utils'; // Assicurati che il path sia giusto
+import { formatDate } from '../../../lib/utils';
 import { CheckCircle, AlertTriangle, Power } from 'lucide-react';
 
 // NOTA: Aggiunto "seasons = []" per evitare il crash su .length

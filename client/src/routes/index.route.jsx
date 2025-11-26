@@ -11,9 +11,12 @@ import ResetPasswordPage from '../pages/auth/ResetPasswordPage.jsx';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.jsx';
 import ResendVerificationPage from '../pages/auth/ResendVerificationPage.jsx';
 import AdminConsolePage from '../pages/admin/AdminConsolePage.jsx';
-import SeasonPage from '../pages/admin/SeasonPage.jsx';
 
-import AdminRoute from '../components/AdminRoute.jsx';
+// ---------ADMIN-------------------------------
+
+import AdminRoute from '../routes/AdminRoute.jsx';
+import SeasonPage from '../pages/Season/SeasonPage.jsx';
+import MatchDayListPage from '../pages/admin/MatchDay/MatchDayListPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +31,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminConsolePage /> },
           { path: 'season', element: <SeasonPage /> },
+          { path: 'match-day-list', element: <MatchDayListPage /> },
         ],
       },
     ],
