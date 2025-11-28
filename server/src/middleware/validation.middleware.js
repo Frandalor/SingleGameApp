@@ -10,7 +10,10 @@ export const validate = (schema) => (req, res, next) => {
   const filteredData = schema.safeParse(validationContext);
 
   if (!filteredData.success) {
-    const errors = filteredData.error.issues.map((i) => i.message);
+    const errors = filteredData.error.issues.map((i) => ({
+      field: i.path.join('.'),
+      message: i.message,
+    }));
     return res.status(400).json({ message: errors });
   }
 

@@ -1,4 +1,4 @@
-import { leaderboardFormSchema } from '@SingleGameApp/shared';
+import { leaderboardFormSchema, teamFormSchema } from '@SingleGameApp/shared';
 import { axiosInstance } from '../lib/axios';
 
 export const getLeaderboardService = async (seasonId, matchDayId) => {
@@ -38,6 +38,54 @@ export const getMatchDayListService = async (seasonId) => {
     return response.data;
   } catch (error) {
     console.error('errore API lista giornate', error);
+    throw error;
+  }
+};
+
+//-----------AGGIUNGE SQUADRE
+
+export const addTeamsService = async (matchDayId, teamsArray) => {
+  const rawData = {
+    teams: teamsArray,
+  };
+
+  const validatedData = teamFormSchema.safeParse(rawData);
+
+  if (!validatedData.success) {
+    console.error('Errore Validazione Frontend', validatedData.error.format);
+
+    throw new Error('Dati delle squadre non validi. Controlla i campi');
+  }
+
+  try {
+    const res = await axiosInstance.post(`/match-day/${matchDayId}/teams`, validatedData.data);
+    return res.data;
+  } catch (error) {
+    console.error('Errore API addTeams', error);
+    throw error;
+  }
+};
+
+// ----------FIND MATCH BY ID
+
+export const getMatchDayByIdService = async (matchDayId) => {
+  try {
+    const res = await axiosInstance.get(`/match-day/${matchDayId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Errore recupero giornata singola', error);
+    throw error;
+  }
+};
+
+//=========DELETE TEAM FROM MATCHDAY
+
+export const deleteTeamService = async (matchDayId, teamId) => {
+  try {
+    const res = await axiosInstance.delete(`/match-day/${matchDayId}/teams/${teamId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Errore deleting team', error);
     throw error;
   }
 };

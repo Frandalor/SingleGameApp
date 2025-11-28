@@ -6,11 +6,15 @@ import Button from '../../../components/Button';
 import BackButton from '../../../components/BackButton';
 
 function MatchDayListPage() {
-  const { matchDays, fetchMatchDays, isLoading } = useMatchDayStore();
+  const { matchDays, fetchMatchDays, isLoading, isCreating, newMatchDay } = useMatchDayStore();
 
   useEffect(() => {
     fetchMatchDays();
   }, [fetchMatchDays]);
+
+  const handleCreateClick = async () => {
+    await newMatchDay();
+  };
 
   return (
     <div className="flex flex-col">
@@ -22,10 +26,7 @@ function MatchDayListPage() {
           </div>
 
           <div>
-            <Button
-              text={'Nuova Giornata'}
-              onClick={() => console.log('inserire funzione creazione giornata')}
-            />
+            <Button text={'Nuova Giornata'} onClick={handleCreateClick} disabled={isCreating} />
           </div>
         </div>
       </div>

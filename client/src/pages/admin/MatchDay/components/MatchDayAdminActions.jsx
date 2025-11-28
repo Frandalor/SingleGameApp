@@ -19,7 +19,7 @@ function MatchDayAdminActions({ matchDay }) {
     case 'pending':
       return (
         <button
-          onClick={(e) => handleAction(e, `/admin/match-day/${matchDay._id}/configure`)}
+          onClick={(e) => handleAction(e, `/admin/match-day/${matchDay._id}/match-day-teams`)}
           className={`${btnBase} border-yellow-500 bg-yellow-50 text-yellow-700 hover:border-yellow-500 hover:bg-yellow-500 hover:text-white`}
           title="Inserisci Squadre"
         >

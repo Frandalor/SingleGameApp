@@ -39,6 +39,7 @@ import {
   matchParamSchema,
   teamIdParamSchema,
   leaderboardSchema,
+  teamSchema,
 } from '@SingleGameApp/shared';
 const router = express.Router();
 
@@ -78,7 +79,12 @@ router.get(
   validate(matchParamSchema),
   getAllTeamsDayMatch
 );
-router.post('/:matchDayId/teams', validate(matchParamSchema), createTeams);
+router.post(
+  '/:matchDayId/teams',
+  validate(matchParamSchema),
+  validate(teamSchema),
+  createTeams
+);
 router.delete(
   '/:matchDayId/teams/:teamId',
   validate(matchParamSchema),

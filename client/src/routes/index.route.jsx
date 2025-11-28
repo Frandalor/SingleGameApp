@@ -17,7 +17,7 @@ import AdminConsolePage from '../pages/admin/AdminConsolePage.jsx';
 import AdminRoute from '../routes/AdminRoute.jsx';
 import SeasonPage from '../pages/Season/SeasonPage.jsx';
 import MatchDayListPage from '../pages/admin/MatchDay/MatchDayListPage.jsx';
-
+import MatchDayTeamsPage from '../pages/admin/MatchDay/MatchDayTeamsPage.jsx';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -32,6 +32,7 @@ const router = createBrowserRouter([
           { index: true, element: <AdminConsolePage /> },
           { path: 'season', element: <SeasonPage /> },
           { path: 'match-day-list', element: <MatchDayListPage /> },
+          { path: 'match-day/:matchDayId/match-day-teams', element: <MatchDayTeamsPage /> },
         ],
       },
     ],

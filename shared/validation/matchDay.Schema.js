@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { objectIdSchema } from './helper.js';
 
 const matchIdSchema = z.object({
-  playerId: objectIdSchema,
+  matchDayId: objectIdSchema,
 });
 const teamIdSchema = z.object({
   teamId: objectIdSchema,
@@ -15,6 +15,18 @@ const teamIdSchema = z.object({
 export const leaderboardFormSchema = z.object({
   season: objectIdSchema.optional(),
   matchDayId: z.union([objectIdSchema, z.literal('')]).optional(),
+});
+
+export const teamFormSchema = z.object({
+  name: z.string().min(1, 'Il nome della squadra è obbligatorio'),
+
+  players: z
+    .array(objectIdSchema)
+    .min(1, 'La squadra deve avere almeno un giocatore')
+    .refine((items) => new Set(items).size === items.length, {
+      message:
+        'Non puoi inserire lo stesso giocatore due volte nella stessa squadra',
+    }),
 });
 
 // ==========================================
@@ -30,4 +42,10 @@ export const teamIdParamSchema = z.object({
 
 export const leaderboardSchema = z.object({
   query: leaderboardFormSchema,
+});
+
+export const teamSchema = z.object({
+  body: z.object({
+    teams: z.array(teamFormSchema).min(1, 'Devi inserire almeno una squadra'),
+  }),
 });

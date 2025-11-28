@@ -25,13 +25,15 @@ export const createTeams = async (req, res) => {
     const { teams } = req.body;
 
     const matchDay = await MatchDay.findById(matchDayId);
+
+    if (!matchDay)
+      return res.status(404).json({ message: 'Giornata non trovata' });
+
     if (matchDay.teams.length >= matchDay.maxTeams) {
       return res
         .status(400)
         .json({ message: 'Numero massimo di squadre già raggiunto' });
     }
-    if (!matchDay)
-      return res.status(404).json({ message: 'Giornata non trovata' });
     if (matchDay.status === 'pairing-pending')
       return res.status(400).json({ message: 'Giornata già completa' });
 
@@ -128,7 +130,8 @@ export const deleteTeamfromMatchDay = async (req, res) => {
     }
     await matchDay.save();
 
-    res.json({ message: 'squadra eliminata con successo' });
+    await matchDay.populate('teams.players', 'name');
+    res.status(200).json(matchDay);
   } catch (error) {
     console.error('errore eliminando squadra', error);
     res.status(500).json({ message: 'internal error' });

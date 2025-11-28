@@ -64,7 +64,20 @@ export const newMatchDay = async (req, res) => {
   try {
     const { formatId } = req.body;
 
-    const format = await Format.findById(formatId);
+    let format;
+
+    if (formatId) {
+      format = await Format.findById(formatId);
+    }
+
+    if (!format) {
+      format = await Format.findOne({ name: 'regular' });
+      if (!format) {
+        logger.error(error);
+        res.status(404).json({ message: 'nessun formato trovato' });
+      }
+    }
+
     const activeSeason = await Season.findOne({ current: true });
     if (!activeSeason) {
       return res.status(400).json({ message: 'Nessuna stagione attiva' });
@@ -72,7 +85,8 @@ export const newMatchDay = async (req, res) => {
     const lastMatchDay = await MatchDay.find({ season: activeSeason._id })
       .sort({ dayNumber: -1 })
       .limit(1);
-    if (lastMatchDay.length > 0 && lastMatchDay.status !== 'completed') {
+
+    if (lastMatchDay.length > 0 && lastMatchDay[0].status !== 'completed') {
       return res
         .status(400)
         .json({ message: "L'ultima giornata non è ancora completata" });
@@ -92,6 +106,7 @@ export const newMatchDay = async (req, res) => {
     });
 
     const savedMatchDay = await matchDay.save();
+
     res.status(201).json(savedMatchDay);
   } catch (error) {
     console.error('errore creando nuova giornata', error);

@@ -58,9 +58,11 @@ export {
 export {
   //frontend
   leaderboardFormSchema,
+  teamFormSchema,
 
   //backend
   matchParamSchema,
   teamIdParamSchema,
   leaderboardSchema,
+  teamSchema,
 } from './validation/matchDay.Schema.js';

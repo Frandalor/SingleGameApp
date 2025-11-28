@@ -1,4 +1,4 @@
-import { CheckCircle, AlertTriangle, Play, Clock, Settings } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Play, Clock, Settings, Users } from 'lucide-react';
 
 import React from 'react';
 
