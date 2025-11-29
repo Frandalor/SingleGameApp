@@ -18,7 +18,7 @@ function PlayerSearchList({
   }, [players, searchTerm]);
 
   return (
-    <div className="flex h-full max-h-[80vh] flex-col gap-3 rounded-xl border bg-mySecondary p-4 shadow-md">
+    <div className="flex h-full max-h-[30vh] flex-col gap-3 rounded-xl border bg-mySecondary p-4 shadow-md md:max-h-[80vh]">
       {/* HEADER */}
 
       <div className="flex min-h-[20px] items-center gap-1 truncate text-sm font-bold text-gray-700">
@@ -29,18 +29,18 @@ function PlayerSearchList({
       {/* SEARCHBAR */}
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
+        <Search className="absolute left-3 top-1/2 z-30 h-5 w-5 -translate-y-1/2 text-white" />
         <input
           type="text"
           placeholder="Cerca per nome..."
-          className="input-bordered input input-sm flex w-full items-center p-5 pl-9 text-lg"
+          className="input-bordered input input-sm flex w-full items-center p-5 pl-11 text-lg"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
       {/* Lista Giocatori */}
-      <div className="scrollbar-thin flex min-h-[300px] flex-1 flex-col gap-2 overflow-y-auto pr-1 text-white">
+      <div className="scrollbar-thin flex min-h-[70px] flex-1 flex-col gap-2 overflow-y-auto pr-1 text-white">
         {filteredPlayers.length === 0 && (
           <div className="py-4 text-center text-xs text-gray-400">
             {searchTerm ? 'Nessun risultato per la ricerca' : emptyMessage}
@@ -51,14 +51,14 @@ function PlayerSearchList({
           <div
             key={player._id}
             onClick={() => !isDisabled && onPlayerClick(player)}
-            className={`group flex items-center justify-between rounded-lg border border-gray-100 p-2 transition-all ${
+            className={`group flex items-center justify-between rounded-lg border border-gray-100 p-2 pl-4 transition-all ${
               isDisabled
                 ? 'cursor-not-allowed bg-gray-50 opacity-60'
                 : 'hover:bg-primary/5 hover:border-primary/30 cursor-pointer'
             } `}
           >
             <span
-              className={`text-sm font-medium ${isDisabled ? 'text-gray-500' : 'text-white group-hover:text-primary'}`}
+              className={`text-md font-medium ${isDisabled ? 'text-gray-500' : 'text-white group-hover:text-primary'}`}
             >
               {player.player}
             </span>
@@ -80,5 +80,6 @@ function PlayerSearchList({
     </div>
   );
 }
+
 
 export default PlayerSearchList;
