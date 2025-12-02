@@ -1,4 +1,4 @@
-import { leaderboardFormSchema, teamFormSchema } from '@SingleGameApp/shared';
+import { leaderboardFormSchema, teamsArrayFormSchema } from '@SingleGameApp/shared';
 import { axiosInstance } from '../lib/axios';
 
 export const getLeaderboardService = async (seasonId, matchDayId) => {
@@ -49,7 +49,8 @@ export const addTeamsService = async (matchDayId, teamsArray) => {
     teams: teamsArray,
   };
 
-  const validatedData = teamFormSchema.safeParse(rawData);
+  console.log('DATI DA FRONTEND', rawData);
+  const validatedData = teamsArrayFormSchema.safeParse(rawData);
 
   if (!validatedData.success) {
     console.error('Errore Validazione Frontend', validatedData.error.format);

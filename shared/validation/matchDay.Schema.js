@@ -17,8 +17,10 @@ export const leaderboardFormSchema = z.object({
   matchDayId: z.union([objectIdSchema, z.literal('')]).optional(),
 });
 
+//SINGOLA SQUADRA
 export const teamFormSchema = z.object({
   name: z.string().min(1, 'Il nome della squadra è obbligatorio'),
+  _id: z.string().optional(),
 
   players: z
     .array(objectIdSchema)
@@ -27,6 +29,10 @@ export const teamFormSchema = z.object({
       message:
         'Non puoi inserire lo stesso giocatore due volte nella stessa squadra',
     }),
+});
+//ARRAY DI SQUADRE
+export const teamsArrayFormSchema = z.object({
+  teams: z.array(teamFormSchema),
 });
 
 // ==========================================

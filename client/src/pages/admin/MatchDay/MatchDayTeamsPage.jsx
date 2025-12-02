@@ -1,6 +1,17 @@
 import React, { act, use, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useFetcher } from 'react-router-dom';
-import { Search, Plus, X, Save, User, Swords, Unlock, Trash2, CheckCircle } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  X,
+  Save,
+  User,
+  Swords,
+  Unlock,
+  Trash2,
+  CheckCircle,
+  Lock,
+} from 'lucide-react';
 import { usePlayerStore } from '../../../store/usePlayerStore';
 import { useMatchDayStore } from '../../../store/useMatchDayStore';
 import Splitter from '../../../components/Splitter';
@@ -9,6 +20,8 @@ import toast from 'react-hot-toast';
 import PlayerSearchList from './components/PlayerSearchList';
 import Button from '../../../components/Button';
 
+const MAX_Player_IN_TEAM = 8;
+
 function MatchDayTeamsPage() {
   const { matchDayId } = useParams();
   const navigate = useNavigate();
@@ -16,7 +29,6 @@ function MatchDayTeamsPage() {
   const [teams, setTeams] = useState([]);
 
   const [activeTeamIndex, setActiveTeamIndex] = useState(-1);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const { players, fetchAllPlayers, isLoading: loadingPlayers } = usePlayerStore();
   const {
@@ -39,10 +51,10 @@ function MatchDayTeamsPage() {
   }, [matchDayId, fetchAllPlayers, fetchMatchDayById, clearSelectedMatchDay]);
 
   // -----SYNC in caso di squadre già inserite
-  console.log(players);
   useEffect(() => {
     if (selectedMatchDay && selectedMatchDay.teams?.length > 0) {
       const dbTeams = selectedMatchDay.teams.map((dbTeam, index) => ({
+        _id: dbTeam._id,
         id: dbTeam._id || Date.now() + index,
         name: dbTeam.name || 'squadra',
         players: dbTeam.players || [],
@@ -126,11 +138,18 @@ function MatchDayTeamsPage() {
     if (teams.some((t) => t.players.length === 0))
       return toast.error('Tutte le squadre devono avere giocatori');
 
+    if (teams.some((t) => !t.name || t.name.trim() === ''))
+      return toast.error('Tutte le squadre devono avere un nome');
+
     const payload = teams.map((t) => ({
-      _id: t.isSaved ? t._id : undefined,
+      // Aggiunge _id solo se esiste e la squadra è salvata
+      ...(t.isSaved && t._id ? { _id: t._id } : {}),
+
       name: t.name,
+      // Assicurati che p._id sia la stringa dell'ID
       players: t.players.map((p) => p._id),
     }));
+
     const success = await addTeams(matchDayId, payload);
     if (success) {
       toast.success('Tutte le squadre salvate');
@@ -150,6 +169,8 @@ function MatchDayTeamsPage() {
     const currentTeam = teams[activeTeamIndex];
 
     if (currentTeam.isLocked) return toast.error('Squadra bloccata. Sbloccala per modificarla');
+    if (currentTeam.players.length >= MAX_Player_IN_TEAM)
+      return toast.error('squadra gia al completo');
 
     //controllo duplicati
     if (currentTeam.players.some((p) => p._id === player._id)) {

@@ -59,6 +59,7 @@ export {
   //frontend
   leaderboardFormSchema,
   teamFormSchema,
+  teamsArrayFormSchema,
 
   //backend
   matchParamSchema,
