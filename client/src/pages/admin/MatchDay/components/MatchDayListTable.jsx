@@ -51,7 +51,7 @@ function MatchDayListTable({ matchDays, isLoading }) {
       header: 'Stato',
       render: (row) => (
         <div className="flex items-center justify-center">
-          <MatchDayBadge status={row.status} />
+          <MatchDayBadge status={row.status} matchDay={row} />
         </div>
       ),
     },

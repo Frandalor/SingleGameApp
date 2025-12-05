@@ -59,7 +59,7 @@ export const addTeamsService = async (matchDayId, teamsArray) => {
   }
 
   try {
-    const res = await axiosInstance.post(`/match-day/${matchDayId}/teams`, validatedData.data);
+    const res = await axiosInstance.put(`/match-day/${matchDayId}/teams`, validatedData.data);
     return res.data;
   } catch (error) {
     console.error('Errore API addTeams', error);

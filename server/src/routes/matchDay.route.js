@@ -26,6 +26,7 @@ import {
   getAllTeamsDayMatch,
   deleteTeamfromMatchDay,
   createTeams,
+  updateTeams,
 } from '../controllers/matchDay/teams.controller.js';
 
 //----------------CUSTOM FUNCTIONS----------------
@@ -84,6 +85,12 @@ router.post(
   validate(matchParamSchema),
   validate(teamSchema),
   createTeams
+);
+router.put(
+  '/:matchDayId/teams',
+  validate(matchParamSchema),
+  validate(teamSchema),
+  updateTeams
 );
 router.delete(
   '/:matchDayId/teams/:teamId',

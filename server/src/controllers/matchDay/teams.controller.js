@@ -1,3 +1,4 @@
+import { logger } from '../../lib/logger.js';
 import MatchDay from '../../models/MatchDay.js';
 
 //----------TEAM INSERTION
@@ -94,7 +95,6 @@ export const createTeams = async (req, res) => {
 
 export const deleteTeamfromMatchDay = async (req, res) => {
   try {
-    console.log(req.params);
     const { teamId, matchDayId } = req.params;
 
     //trovo giornata
@@ -137,3 +137,32 @@ export const deleteTeamfromMatchDay = async (req, res) => {
     res.status(500).json({ message: 'internal error' });
   }
 };
+
+
+
+//=-----UPDATE TEAMS IN MATCH DAY
+
+export const updateTeams = async (req, res) => {
+    const {matchDayId} = req.params
+    const {teams} = req.body
+
+    try {
+      const matchDay = await MatchDay.findById(matchDayId)
+
+      if(!matchDay){
+        return res.status(404).json({message: 'MatchDay non trovato'})
+      }
+
+      matchDay.teams = teams
+
+      await matchDay.save()
+
+      res.status(200).json({message: 'Squadre aggiornate con successo'})
+
+
+    } catch (error) {
+      logger.error(error)
+      res.status(400).json({message: 'Errore nell aggiornamento delle squadre'})
+    }
+
+}

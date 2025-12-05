@@ -1,8 +1,20 @@
 import { CheckCircle, AlertTriangle, Play, Clock, Settings, Users } from 'lucide-react';
 
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function MatchDayBadge({ status }) {
+import React from 'react';
+const Label = ({ children }) => <span className="ml-1 hidden sm:inline">{children}</span>;
+
+function MatchDayBadge({ status, matchDay }) {
+  const navigate = useNavigate();
+
+  const handleAction = (e, path) => {
+    e.stopPropagation();
+    navigate(path);
+  };
+  const btnBase = 'btn btn-xs gap-1 font-bold border-2 transition-all p-2 ';
+  const iconBase = 'h-6 w-6 sm:h-4 sm:w-4';
+
   const baseClasses =
     'flex items-center justify-center gap-1.5 rounded border px-2 py-1 text-[10px] font-bold uppercase shadow-sm w-fit mx-auto';
 
@@ -31,10 +43,14 @@ function MatchDayBadge({ status }) {
       );
     case 'pairing-pending':
       return (
-        <span className={`${baseClasses} border-orange-500 bg-orange-100 text-orange-800`}>
-          <Users className="h-3 w-3" />
-          Genera Coppie
-        </span>
+        <button
+          onClick={(e) => handleAction(e, `/admin/match-day/${matchDay._id}/match-day-teams`)}
+          className={`${btnBase} border-yellow-500 bg-yellow-50 text-yellow-700 hover:border-yellow-500 hover:bg-yellow-500 hover:text-white`}
+          title="Visualizza/Modifica Squadre"
+        >
+          <Settings className={iconBase} />
+          <Label>Modifica Squadre</Label>
+        </button>
       );
     case 'pending':
     default:
