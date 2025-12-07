@@ -1,21 +1,9 @@
-import React, { act, use, useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate, useFetcher } from 'react-router-dom';
-import {
-  Search,
-  Plus,
-  X,
-  Save,
-  User,
-  Swords,
-  Unlock,
-  Trash2,
-  CheckCircle,
-  Lock,
-} from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Plus, X, Save, Unlock, Trash2, CheckCircle, Lock, ArrowLeft } from 'lucide-react';
 import { usePlayerStore } from '../../../store/usePlayerStore';
 import { useMatchDayStore } from '../../../store/useMatchDayStore';
 import Splitter from '../../../components/Splitter';
-import BackButton from '../../../components/BackButton';
 import toast from 'react-hot-toast';
 import PlayerSearchList from './components/PlayerSearchList';
 import Button from '../../../components/Button';
@@ -71,6 +59,8 @@ function MatchDayTeamsPage() {
   //----------ADD TEAM
 
   const handleAddTeam = () => {
+    if (teams.length >= 4) return toast.error('Numero massimo di squadre raggiunto');
+
     const newTeam = {
       id: Date.now(),
       name: '',
@@ -128,6 +118,7 @@ function MatchDayTeamsPage() {
       if (activeTeamIndex === index) setActiveTeamIndex(-1);
     }
     team.isLocked = !team.isLocked;
+    setActiveTeamIndex(team.isLocked ? -1 : index);
     setTeams(newTeams);
   };
 
@@ -137,6 +128,8 @@ function MatchDayTeamsPage() {
     if (teams.length < 1) return toast.error('Nessuna nuova squadra aggiunta');
     if (teams.some((t) => t.players.length === 0))
       return toast.error('Tutte le squadre devono avere giocatori');
+    if (teams.some((t) => t.players.length < 8))
+      return toast.error('Tutte le squadre devono essere complete (8 giocatori)');
 
     if (teams.some((t) => !t.name || t.name.trim() === ''))
       return toast.error('Tutte le squadre devono avere un nome');
@@ -153,6 +146,14 @@ function MatchDayTeamsPage() {
     const success = await addTeams(matchDayId, payload);
     if (success) {
       toast.success('Tutte le squadre salvate');
+      await fetchMatchDayById(matchDayId);
+      const lockedTeams = teams.map((t) => ({
+        ...t,
+        isLocked: true,
+        isSaved: true,
+      }));
+      setTeams(lockedTeams);
+      setActiveTeamIndex(-1);
     }
 
     //Aggiungere logica per stabiire se si puo procedere al pairing
@@ -192,6 +193,33 @@ function MatchDayTeamsPage() {
     setTeams(newTeams);
   };
 
+  // MODIFICHE SQUADRE
+
+  // controllo se ci sono state modifiche
+
+  const hasChanges = useMemo(() => {
+    const dbTeams = selectedMatchDay?.teams || [];
+
+    if (teams.length !== dbTeams.length) return true;
+
+    return teams.some((team, index) => {
+      const dbTeam = dbTeams[index];
+      if (!team._id) return true;
+
+      if (team.name !== dbTeam.name) return true;
+      const localPlayersIds = team.players
+        .map((p) => p._id)
+        .sort()
+        .join(',');
+      const dbPlayersIds = (dbTeam.players || [])
+        .map((p) => p._id)
+        .sort()
+        .join(',');
+      if (localPlayersIds !== dbPlayersIds) return true;
+      return false;
+    });
+  });
+
   // ================== FILTRI ==============================
 
   const usedPlayerIds = useMemo(() => {
@@ -220,13 +248,17 @@ function MatchDayTeamsPage() {
       <div>
         <Splitter title="Gestione Squadre" />
         <div className="mt-4 flex items-center justify-between px-2">
-          <BackButton />
+          <Button
+            text={'Indietro'}
+            onClick={() => navigate('/admin/match-day-list')}
+            Icon={ArrowLeft}
+          />
 
           <Button
             onClick={handleSaveAll}
             className="text-white"
             text={'Salva'}
-            disabled={isAddingTeams || teams.length === 0}
+            disabled={isAddingTeams || teams.length === 0 || !hasChanges}
             Icon={Save}
           />
         </div>
@@ -263,7 +295,7 @@ function MatchDayTeamsPage() {
           {teams.map((team, index) => {
             const isActive = activeTeamIndex === index;
             const isLocked = team.isLocked;
-
+            const currentPlayers = team.players || [];
             return (
               <div
                 key={team.id}
@@ -304,9 +336,11 @@ function MatchDayTeamsPage() {
                     placeholder="Nome Squadra"
                   />
                   <div className="flex items-center gap-1">
-                    {team.isSaved && <CheckCircle size={14} className="text-green-500" />}
+                    {team.isSaved && currentPlayers.length === MAX_Player_IN_TEAM && (
+                      <CheckCircle size={14} className="text-green-500" />
+                    )}
                     <span className="badge badge-sm border-gray-200 bg-inherit text-xl">
-                      {team.players.length}
+                      {currentPlayers.length}
                     </span>
                   </div>
                 </div>
@@ -314,12 +348,12 @@ function MatchDayTeamsPage() {
 
                 {/* =====PLAYER LIST IN TEAM ==== START=== */}
                 <ul className="flex min-h-[60px] flex-col gap-1 lg:grid lg:grid-cols-2">
-                  {team.players.length === 0 && (
+                  {currentPlayers.length === 0 && (
                     <div className="flex flex-1 items-center justify-center text-xs italic text-gray-400 lg:col-span-2">
                       {isLocked ? 'Nessun Giocatore' : 'Vuota'}
                     </div>
                   )}
-                  {team.players.map((player) => (
+                  {currentPlayers.map((player) => (
                     <li
                       key={player._id}
                       className={`flex items-center justify-between rounded-md border px-2 py-1.5 text-xs shadow-sm ${isLocked ? 'bg-gray-50 text-gray-500' : 'bg-inherit text-white brightness-200'} `}

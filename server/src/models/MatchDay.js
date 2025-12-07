@@ -18,8 +18,6 @@ const matchDaySchema = new mongoose.Schema(
       ref: 'Format',
       required: true,
     },
-    custom: { type: Number, max: 8, min: 2, default: null },
-    maxTeams: { type: Number },
     teams: {
       type: [
         {
@@ -33,6 +31,11 @@ const matchDaySchema = new mongoose.Schema(
           ],
         },
       ],
+      valiidate: {
+        valifdator: function (v) {
+          return v.length <= 4;
+        },
+      },
     },
     pairings: [
       {

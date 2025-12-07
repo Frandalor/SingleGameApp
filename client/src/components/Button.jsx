@@ -23,10 +23,10 @@ function Button({
 
   const iconFinalClasses = `mr-2 h-4 w-4 md:h-5 md:w-5 ${iconClassName}`;
   const content = (
-    <>
+    <div className="flex items-center justify-center">
       {Icon && <Icon className={iconFinalClasses} />}
       {text}
-    </>
+    </div>
   );
 
   if (link && !disabled) {
